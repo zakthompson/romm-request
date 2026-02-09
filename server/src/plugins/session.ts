@@ -6,7 +6,7 @@ import { config } from '../config.js';
 export default fp(async (app: FastifyInstance) => {
   await app.register(secureSession, {
     secret: config.session.secret,
-    salt: 'romm-request-salt',
+    salt: 'romm-request-slt',
     cookie: {
       path: config.basePath,
       httpOnly: true,
