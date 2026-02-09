@@ -21,13 +21,15 @@ export const config = {
     path: process.env.DATABASE_PATH || './data/romm-request.db',
   },
 
+  oidcAdminGroup: process.env.OIDC_ADMIN_GROUP || 'romm-admin',
+
   get oidc() {
     return {
       issuerUrl: env('OIDC_ISSUER_URL'),
       clientId: env('OIDC_CLIENT_ID'),
       clientSecret: env('OIDC_CLIENT_SECRET'),
       redirectUri: env('OIDC_REDIRECT_URI'),
-      adminGroup: lazyEnv('OIDC_ADMIN_GROUP', 'romm-admin'),
+      adminGroup: this.oidcAdminGroup,
     };
   },
 

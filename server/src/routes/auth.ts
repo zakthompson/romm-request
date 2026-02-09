@@ -88,6 +88,37 @@ export default async function authRoutes(app: FastifyInstance) {
     return { success: true };
   });
 
+  if (config.nodeEnv !== 'production') {
+    app.post('/dev-login', async (request) => {
+      const body = request.body as {
+        displayName?: string;
+        email?: string;
+        isAdmin?: boolean;
+      };
+
+      const displayName = body.displayName || 'Dev User';
+      const email = body.email || 'dev@localhost';
+      const isAdmin = body.isAdmin ?? false;
+      const sub = `dev-${email}`;
+
+      const groups = isAdmin ? [config.oidcAdminGroup] : [];
+
+      const user = upsertUser(
+        { sub, email, name: displayName, groups },
+        config.oidcAdminGroup
+      );
+
+      request.session.set('userId', user.id);
+
+      return {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        isAdmin: user.isAdmin,
+      };
+    });
+  }
+
   app.get('/me', async (request, reply) => {
     const userId = request.session.get('userId');
     if (!userId) {
