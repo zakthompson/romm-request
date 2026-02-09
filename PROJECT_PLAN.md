@@ -69,20 +69,22 @@ Implement OIDC/OAuth2 login with Authentik, session management, and admin role d
   - Verify: table exists in SQLite after migration
   - Note: Schema in `server/src/db/schema.ts`. Timestamps stored as TEXT using SQLite `datetime('now')`. Migration in `server/drizzle/0000_lumpy_mystique.sql`.
 
-- [ ] **2.3 Implement OIDC/OAuth2 flow**
+- [x] **2.3 Implement OIDC/OAuth2 flow**
   - Create a Fastify plugin that handles OIDC discovery (`.well-known/openid-configuration`)
   - Implement `/api/auth/login` — redirects to Authentik authorization endpoint
   - Implement `/api/auth/callback` — exchanges code for tokens, extracts user info and group claims
   - On successful auth: upsert user in DB (create or update from OIDC claims), set `is_admin` based on group membership
   - Verify: full login flow works against an Authentik instance (or mock)
+  - Note: Uses `openid-client` v6 with PKCE (S256). OIDC config lazily discovered on first auth request. PKCE code verifier and state stored in session during login redirect. Config module (`server/src/config.ts`) centralizes env var access with lazy getters for OIDC to avoid startup errors when env vars are unset.
 
-- [ ] **2.4 Implement session management**
+- [x] **2.4 Implement session management**
   - Install `@fastify/secure-session` (or `@fastify/session` + compatible store)
   - Store user ID in encrypted session cookie
   - Create `requireAuth` and `requireAdmin` decorators/hooks
   - Implement `/api/auth/me` — returns current user from session (or 401)
   - Implement `/api/auth/logout` — destroys session
   - Verify: session persists across requests, `/api/auth/me` returns user, logout clears session
+  - Note: Uses `@fastify/secure-session` with secret+salt approach. Session cookie is httpOnly, sameSite=lax, 7-day maxAge. Auth hooks in `server/src/plugins/auth.ts` export `requireAuth` and `requireAdmin` functions. Session type augmentation in `server/src/types.d.ts`.
 
 - [ ] **2.5 Frontend auth integration**
   - Create `useAuth` hook (wraps TanStack Query call to `/api/auth/me`)

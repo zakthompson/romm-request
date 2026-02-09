@@ -1,0 +1,110 @@
+import * as client from 'openid-client';
+import type { FastifyInstance } from 'fastify';
+import { config } from '../config.js';
+import { upsertUser, getUserById } from '../services/auth.js';
+
+let oidcConfig: client.Configuration;
+
+async function getOidcConfig(): Promise<client.Configuration> {
+  if (!oidcConfig) {
+    oidcConfig = await client.discovery(
+      new URL(config.oidc.issuerUrl),
+      config.oidc.clientId,
+      config.oidc.clientSecret
+    );
+  }
+  return oidcConfig;
+}
+
+export default async function authRoutes(app: FastifyInstance) {
+  app.get('/login', async (request, reply) => {
+    const oidc = await getOidcConfig();
+
+    const codeVerifier = client.randomPKCECodeVerifier();
+    const codeChallenge = await client.calculatePKCECodeChallenge(codeVerifier);
+    const state = client.randomState();
+
+    request.session.set('oidc_code_verifier', codeVerifier);
+    request.session.set('oidc_state', state);
+
+    const params: Record<string, string> = {
+      redirect_uri: config.oidc.redirectUri,
+      scope: 'openid profile email',
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
+      state,
+    };
+
+    const redirectTo = client.buildAuthorizationUrl(oidc, params);
+    return reply.redirect(redirectTo.href);
+  });
+
+  app.get('/callback', async (request, reply) => {
+    const oidc = await getOidcConfig();
+
+    const codeVerifier = request.session.get('oidc_code_verifier');
+    const expectedState = request.session.get('oidc_state');
+
+    if (!codeVerifier || !expectedState) {
+      return reply.code(400).send({ error: 'Invalid session state' });
+    }
+
+    request.session.delete();
+
+    const currentUrl = new URL(
+      request.url,
+      `${request.protocol}://${request.hostname}`
+    );
+
+    const tokens = await client.authorizationCodeGrant(oidc, currentUrl, {
+      pkceCodeVerifier: codeVerifier,
+      expectedState,
+    });
+
+    const claims = tokens.claims();
+    if (!claims) {
+      return reply.code(500).send({ error: 'No ID token claims received' });
+    }
+
+    const sub = claims.sub;
+    const email = (claims.email as string) || '';
+    const name =
+      (claims.preferred_username as string) || (claims.name as string) || email;
+    const groups = (claims.groups as string[]) || [];
+
+    const user = upsertUser(
+      { sub, email, name, groups },
+      config.oidc.adminGroup
+    );
+
+    request.session.set('userId', user.id);
+
+    const redirectTarget = config.basePath === '/' ? '/' : config.basePath;
+    return reply.redirect(redirectTarget);
+  });
+
+  app.post('/logout', async (request) => {
+    request.session.delete();
+    return { success: true };
+  });
+
+  app.get('/me', async (request, reply) => {
+    const userId = request.session.get('userId');
+    if (!userId) {
+      return reply.code(401).send({ error: 'Not authenticated' });
+    }
+
+    const user = getUserById(userId);
+    if (!user) {
+      request.session.delete();
+      return reply.code(401).send({ error: 'User not found' });
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      isAdmin: user.isAdmin,
+    };
+  });
+}
