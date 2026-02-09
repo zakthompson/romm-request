@@ -56,16 +56,18 @@ Set up the monorepo structure, tooling, and a minimal working shell for both cli
 
 Implement OIDC/OAuth2 login with Authentik, session management, and admin role detection.
 
-- [ ] **2.1 Set up SQLite with Drizzle ORM**
+- [x] **2.1 Set up SQLite with Drizzle ORM**
   - Install `drizzle-orm`, `better-sqlite3`, `drizzle-kit`
   - Configure Drizzle with SQLite connection
   - Create `pnpm db:migrate` and `pnpm db:studio` scripts
   - Verify: migrations run and Drizzle Studio connects
+  - Note: Added `better-sqlite3` to `onlyBuiltDependencies` in `pnpm-workspace.yaml`. DB connection in `server/src/db/index.ts` auto-creates the data directory. SQLite configured with WAL mode and foreign keys enabled.
 
-- [ ] **2.2 Create users table**
+- [x] **2.2 Create users table**
   - Schema: `id`, `oidc_sub` (unique), `email`, `display_name`, `is_admin`, `created_at`, `updated_at`
   - Generate and run initial migration
   - Verify: table exists in SQLite after migration
+  - Note: Schema in `server/src/db/schema.ts`. Timestamps stored as TEXT using SQLite `datetime('now')`. Migration in `server/drizzle/0000_lumpy_mystique.sql`.
 
 - [ ] **2.3 Implement OIDC/OAuth2 flow**
   - Create a Fastify plugin that handles OIDC discovery (`.well-known/openid-configuration`)
