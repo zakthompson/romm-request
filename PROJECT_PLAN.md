@@ -86,12 +86,13 @@ Implement OIDC/OAuth2 login with Authentik, session management, and admin role d
   - Verify: session persists across requests, `/api/auth/me` returns user, logout clears session
   - Note: Uses `@fastify/secure-session` with secret+salt approach. Session cookie is httpOnly, sameSite=lax, 7-day maxAge. Auth hooks in `server/src/plugins/auth.ts` export `requireAuth` and `requireAdmin` functions. Session type augmentation in `server/src/types.d.ts`.
 
-- [ ] **2.5 Frontend auth integration**
+- [x] **2.5 Frontend auth integration**
   - Create `useAuth` hook (wraps TanStack Query call to `/api/auth/me`)
   - Create an auth context/provider that exposes user state and `isAdmin`
   - Implement login page with "Sign in with Authentik" button
   - Redirect unauthenticated users to login
   - Verify: login redirects to Authentik, callback lands back in the app with user state populated
+  - Note: `useAuth` hook in `client/src/lib/auth.ts` uses TanStack Query with `authQueryOptions`. API client in `client/src/lib/api.ts` with typed error handling. Auth protection via `_authenticated` layout route — all authenticated routes are nested under it. Admin routes check `isAdmin` and redirect to `/search` if unauthorized. Placeholder routes created for `/search`, `/requests`, `/admin/requests`, `/admin/config`.
 
 - [ ] **2.6 App shell and navigation**
   - Create root layout with top nav bar showing user info and logout

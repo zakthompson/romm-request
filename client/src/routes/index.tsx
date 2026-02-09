@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Navigate } from '@tanstack/react-router';
 import { APP_NAME } from '@romm-request/shared';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,12 +8,27 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { useAuth } from '@/lib/auth';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
 });
 
 function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/search" />;
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -24,7 +39,9 @@ function HomePage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <Button>Sign In</Button>
+          <Button asChild>
+            <a href="/api/auth/login">Sign In</a>
+          </Button>
         </CardContent>
       </Card>
     </div>
