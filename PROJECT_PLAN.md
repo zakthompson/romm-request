@@ -94,12 +94,13 @@ Implement OIDC/OAuth2 login with Authentik, session management, and admin role d
   - Verify: login redirects to Authentik, callback lands back in the app with user state populated
   - Note: `useAuth` hook in `client/src/lib/auth.ts` uses TanStack Query with `authQueryOptions`. API client in `client/src/lib/api.ts` with typed error handling. Auth protection via `_authenticated` layout route — all authenticated routes are nested under it. Admin routes check `isAdmin` and redirect to `/search` if unauthorized. Placeholder routes created for `/search`, `/requests`, `/admin/requests`, `/admin/config`.
 
-- [ ] **2.6 App shell and navigation**
+- [x] **2.6 App shell and navigation**
   - Create root layout with top nav bar showing user info and logout
   - For admin users: add a sidebar/side menu with links to admin sections (Requests, Configuration)
   - Non-admin users see a simpler layout (no admin menu)
   - Protected route wrappers for authenticated and admin-only routes
   - Verify: admin and non-admin users see different navigation
+  - Note: Implemented as a horizontal nav bar (`NavBar` component) in the `_authenticated` layout rather than sidebar. Admin links (All Requests, Config) only shown when `isAdmin` is true. User dropdown menu shows email, admin badge, and sign-out option. Uses shadcn/ui DropdownMenu and lucide-react icons. Navigation uses TanStack Router `Link` components.
 
 ---
 

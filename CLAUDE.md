@@ -18,26 +18,45 @@ A self-hosted web application for requesting games to be added to a RomM collect
 ├── client/                # React frontend (Vite)
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── ui/        # shadcn/ui components (Button, Card, Input)
+│   │   │   ├── nav-bar.tsx  # App navigation bar (auth-aware, admin links)
+│   │   │   └── ui/          # shadcn/ui components (Button, Card, Input, DropdownMenu)
 │   │   ├── lib/
-│   │   │   └── utils.ts   # cn() utility for Tailwind class merging
-│   │   ├── routes/        # TanStack Router file-based routes
-│   │   │   ├── __root.tsx # Root layout
-│   │   │   └── index.tsx  # Home page
-│   │   ├── index.css      # Tailwind v4 CSS config with theme variables
-│   │   ├── main.tsx       # App entry point
-│   │   └── routeTree.gen.ts  # Auto-generated (gitignored)
-│   ├── components.json    # shadcn/ui config
+│   │   │   ├── api.ts       # Typed API client (apiFetch, ApiError)
+│   │   │   ├── auth.ts      # useAuth hook, authQueryOptions, User type
+│   │   │   └── utils.ts     # cn() utility for Tailwind class merging
+│   │   ├── routes/          # TanStack Router file-based routes
+│   │   │   ├── __root.tsx   # Root layout
+│   │   │   ├── index.tsx    # Home/login page (redirects if authenticated)
+│   │   │   └── _authenticated.tsx  # Auth-protected layout wrapper
+│   │   │       ├── search.tsx          # Game search (placeholder)
+│   │   │       ├── requests.tsx        # User request history (placeholder)
+│   │   │       └── admin/
+│   │   │           ├── requests.tsx    # Admin: all requests (placeholder)
+│   │   │           └── config.tsx      # Admin: configuration (placeholder)
+│   │   ├── index.css        # Tailwind v4 CSS config with theme variables
+│   │   ├── main.tsx         # App entry point
+│   │   └── routeTree.gen.ts # Auto-generated (gitignored)
+│   ├── components.json      # shadcn/ui config
 │   ├── vite.config.ts
 │   ├── tsconfig.json
 │   └── package.json
 ├── server/                # Fastify backend
 │   ├── src/
-│   │   ├── routes/        # API route handlers (to be created)
-│   │   ├── services/      # Business logic (to be created)
-│   │   ├── db/            # Drizzle schema, migrations (to be created)
-│   │   ├── plugins/       # Fastify plugins (to be created)
+│   │   ├── routes/
+│   │   │   └── auth.ts    # Auth routes (login, callback, me, logout)
+│   │   ├── services/
+│   │   │   └── auth.ts    # User upsert, getUserById
+│   │   ├── db/
+│   │   │   ├── index.ts   # Database connection (better-sqlite3 + Drizzle)
+│   │   │   └── schema.ts  # Drizzle table definitions (users)
+│   │   ├── plugins/
+│   │   │   ├── auth.ts    # requireAuth, requireAdmin hooks
+│   │   │   └── session.ts # @fastify/secure-session setup
+│   │   ├── config.ts      # Centralized env var config
+│   │   ├── types.d.ts     # Type augmentations (Fastify, SessionData)
 │   │   └── index.ts       # Server entry point, health check, static serving
+│   ├── drizzle/           # Generated SQL migrations
+│   ├── drizzle.config.ts  # Drizzle Kit config
 │   ├── tsup.config.ts     # Server build config (bundles shared package)
 │   ├── tsconfig.json
 │   └── package.json
@@ -78,6 +97,10 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **Client dev proxy** — Vite proxies `/api` requests to `http://localhost:3000` during development.
 - **ESLint** — v9 flat config at project root (`eslint.config.js`). Uses `typescript-eslint`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, and `eslint-config-prettier`. React rules scoped to `client/**`, Node globals scoped to `server/**`.
 - **Prettier** — configured via `.prettierrc`. Run `pnpm format` to auto-format, `pnpm format:check` to validate.
+- **Database** — SQLite via better-sqlite3 with Drizzle ORM. WAL mode and foreign keys enabled. Migrations in `server/drizzle/`, run via `pnpm db:migrate`. Config in `server/drizzle.config.ts`.
+- **Auth (backend)** — OIDC/OAuth2 via `openid-client` v6 with PKCE. Session via `@fastify/secure-session` (encrypted cookie, secret+salt). Config module (`server/src/config.ts`) with lazy getters for OIDC env vars. Type augmentations in `server/src/types.d.ts`.
+- **Auth (frontend)** — `useAuth` hook (`client/src/lib/auth.ts`) queries `/api/auth/me` via TanStack Query. `_authenticated` layout route protects all authenticated pages. Admin routes check `isAdmin` in the component body. API client (`client/src/lib/api.ts`) with typed error handling.
+- **Route protection** — Backend: `requireAuth` and `requireAdmin` hooks in `server/src/plugins/auth.ts`. Frontend: `_authenticated` layout route redirects to `/` if not authenticated; admin pages redirect to `/search` if not admin.
 
 ## Environment Variables
 
