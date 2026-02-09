@@ -32,32 +32,32 @@ In production, Fastify serves the built React SPA as static files. In developmen
 
 ### users
 
-| Column | Type | Notes |
-|---|---|---|
-| id | INTEGER | PK, autoincrement |
-| oidc_sub | TEXT | Unique, OIDC subject claim |
-| email | TEXT | From OIDC claims |
-| display_name | TEXT | From OIDC claims |
-| is_admin | BOOLEAN | Derived from Authentik group membership |
-| created_at | TIMESTAMP | Default: now |
-| updated_at | TIMESTAMP | Updated on change |
+| Column       | Type      | Notes                                   |
+| ------------ | --------- | --------------------------------------- |
+| id           | INTEGER   | PK, autoincrement                       |
+| oidc_sub     | TEXT      | Unique, OIDC subject claim              |
+| email        | TEXT      | From OIDC claims                        |
+| display_name | TEXT      | From OIDC claims                        |
+| is_admin     | BOOLEAN   | Derived from Authentik group membership |
+| created_at   | TIMESTAMP | Default: now                            |
+| updated_at   | TIMESTAMP | Updated on change                       |
 
 ### requests
 
-| Column | Type | Notes |
-|---|---|---|
-| id | INTEGER | PK, autoincrement |
-| user_id | INTEGER | FK → users.id |
-| igdb_game_id | INTEGER | IGDB game identifier |
-| game_name | TEXT | Stored for display (denormalized) |
-| game_cover_url | TEXT | Nullable, IGDB cover image URL |
-| platform_name | TEXT | e.g. "Nintendo 64", "PlayStation 2" |
-| platform_igdb_id | INTEGER | IGDB platform identifier |
-| status | TEXT | `pending` / `fulfilled` / `rejected` |
-| admin_notes | TEXT | Nullable, set by admin on fulfill/reject |
-| created_at | TIMESTAMP | Default: now |
-| updated_at | TIMESTAMP | Updated on change |
-| fulfilled_at | TIMESTAMP | Nullable, set when fulfilled |
+| Column           | Type      | Notes                                    |
+| ---------------- | --------- | ---------------------------------------- |
+| id               | INTEGER   | PK, autoincrement                        |
+| user_id          | INTEGER   | FK → users.id                            |
+| igdb_game_id     | INTEGER   | IGDB game identifier                     |
+| game_name        | TEXT      | Stored for display (denormalized)        |
+| game_cover_url   | TEXT      | Nullable, IGDB cover image URL           |
+| platform_name    | TEXT      | e.g. "Nintendo 64", "PlayStation 2"      |
+| platform_igdb_id | INTEGER   | IGDB platform identifier                 |
+| status           | TEXT      | `pending` / `fulfilled` / `rejected`     |
+| admin_notes      | TEXT      | Nullable, set by admin on fulfill/reject |
+| created_at       | TIMESTAMP | Default: now                             |
+| updated_at       | TIMESTAMP | Updated on change                        |
+| fulfilled_at     | TIMESTAMP | Nullable, set when fulfilled             |
 
 **Constraint**: Unique on (`user_id`, `igdb_game_id`, `platform_igdb_id`) where `status = 'pending'` — prevents duplicate pending requests.
 
@@ -65,34 +65,34 @@ In production, Fastify serves the built React SPA as static files. In developmen
 
 ### Auth
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/api/auth/login` | None | Redirects to Authentik OIDC authorization |
-| GET | `/api/auth/callback` | None | OIDC callback, exchanges code, creates session |
-| POST | `/api/auth/logout` | User | Destroys session |
-| GET | `/api/auth/me` | User | Returns current user info |
+| Method | Path                 | Auth | Description                                    |
+| ------ | -------------------- | ---- | ---------------------------------------------- |
+| GET    | `/api/auth/login`    | None | Redirects to Authentik OIDC authorization      |
+| GET    | `/api/auth/callback` | None | OIDC callback, exchanges code, creates session |
+| POST   | `/api/auth/logout`   | User | Destroys session                               |
+| GET    | `/api/auth/me`       | User | Returns current user info                      |
 
 ### Games (IGDB)
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/api/games/search?q=` | User | Search IGDB for games |
-| GET | `/api/games/:id` | User | Get game details with platforms |
+| Method | Path                   | Auth | Description                     |
+| ------ | ---------------------- | ---- | ------------------------------- |
+| GET    | `/api/games/search?q=` | User | Search IGDB for games           |
+| GET    | `/api/games/:id`       | User | Get game details with platforms |
 
 ### Requests
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| POST | `/api/requests` | User | Create a new game request |
-| GET | `/api/requests` | User | List requests (own for users, all for admins). Supports `?status=` filter |
-| GET | `/api/requests/:id` | User | Get request details |
-| PATCH | `/api/requests/:id` | Admin | Update request status and notes |
+| Method | Path                | Auth  | Description                                                               |
+| ------ | ------------------- | ----- | ------------------------------------------------------------------------- |
+| POST   | `/api/requests`     | User  | Create a new game request                                                 |
+| GET    | `/api/requests`     | User  | List requests (own for users, all for admins). Supports `?status=` filter |
+| GET    | `/api/requests/:id` | User  | Get request details                                                       |
+| PATCH  | `/api/requests/:id` | Admin | Update request status and notes                                           |
 
 ### System
 
-| Method | Path | Auth | Description |
-|---|---|---|---|
-| GET | `/api/health` | None | Health check |
+| Method | Path          | Auth | Description  |
+| ------ | ------------- | ---- | ------------ |
+| GET    | `/api/health` | None | Health check |
 
 ## Authentication Flow
 

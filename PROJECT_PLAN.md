@@ -4,46 +4,51 @@
 
 Set up the monorepo structure, tooling, and a minimal working shell for both client and server.
 
-- [ ] **1.1 Initialize pnpm workspace and package scaffolding**
+- [x] **1.1 Initialize pnpm workspace and package scaffolding**
   - Create root `package.json` and `pnpm-workspace.yaml`
   - Create `client/`, `server/`, and `shared/` packages with their own `package.json`
   - Verify `pnpm install` works across the workspace
 
-- [ ] **1.2 Configure TypeScript**
+- [x] **1.2 Configure TypeScript**
   - Root `tsconfig.json` with shared compiler options
   - Per-package `tsconfig.json` files extending root
   - `shared` package builds and is importable from both `client` and `server`
 
-- [ ] **1.3 Set up the Fastify server**
+- [x] **1.3 Set up the Fastify server**
   - Install Fastify and core dependencies
   - Create `server/src/index.ts` with a basic health-check endpoint (`GET /api/health`)
-  - Add `tsx` for dev mode, build script via `tsup` or `tsc`
+  - Add `tsx` for dev mode, build script via `tsup` (with `tsup.config.ts`)
   - Verify: `pnpm --filter server dev` starts and responds on `/api/health`
+  - Note: Server also serves built client as static files in production via `@fastify/static`
 
-- [ ] **1.4 Set up the Vite + React client**
-  - Install Vite, React, TanStack Router
+- [x] **1.4 Set up the Vite + React client**
+  - Install Vite, React, TanStack Router, TanStack Query
   - Set up file-based routing with a root layout and a placeholder index route
+  - TanStack Router plugin auto-generates `routeTree.gen.ts`
   - Verify: `pnpm --filter client dev` starts and renders in browser
 
-- [ ] **1.5 Set up Tailwind CSS and shadcn/ui**
-  - Install and configure Tailwind CSS in the client
-  - Initialize shadcn/ui, add a few base components (Button, Card, Input) to verify it works
-  - Apply a minimal global layout so subsequent phases have something to build on
+- [x] **1.5 Set up Tailwind CSS and shadcn/ui**
+  - Tailwind CSS v4 with `@tailwindcss/vite` plugin (no `tailwind.config.js` — uses CSS-based config in `index.css`)
+  - shadcn/ui set up manually with `components.json`, `cn()` utility, and base components (Button, Card, Input)
+  - Dependencies: `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `@radix-ui/react-slot`
+  - Path alias `@/` configured in both Vite (`resolve.alias`) and TypeScript (`paths`)
 
-- [ ] **1.6 Set up shared types package**
-  - Create `shared/src/index.ts` with placeholder type exports
+- [x] **1.6 Set up shared types package**
+  - Create `shared/src/index.ts` with placeholder type exports (`APP_NAME`, `RequestStatus`)
   - Confirm imports work in both `client` and `server`
+  - Note: Shared package exports TypeScript source directly (not compiled JS) for dev simplicity. Server build bundles it via tsup `noExternal`.
 
-- [ ] **1.7 Development tooling**
-  - Root-level `pnpm dev` script that runs client and server concurrently
-  - Root-level `pnpm build` script that builds all packages
-  - `.gitignore` covering `node_modules`, `dist`, `.env`, SQLite files, etc.
+- [x] **1.7 Development tooling**
+  - Root-level `pnpm dev` script that runs client and server concurrently (via `concurrently`)
+  - Root-level `pnpm build` script that builds all packages (shared → client → server)
+  - `.gitignore` covering `node_modules`, `dist`, `.env`, SQLite files, `routeTree.gen.ts`, etc.
   - `.env.example` with all required environment variables
 
-- [ ] **1.8 Docker setup**
-  - Multi-stage `Dockerfile` (install → build → production image)
-  - `docker-compose.yml` with environment variable passthrough and volume for SQLite data
-  - Verify: `docker compose up --build` starts the app and serves the client
+- [x] **1.8 Docker setup**
+  - Multi-stage `Dockerfile` (base → deps → build → production) with `node:22-slim`
+  - `docker-compose.yml` with environment variable passthrough, named volume for SQLite data, health check, restart policy
+  - `.dockerignore` to exclude unnecessary files
+  - Verified: `docker compose up --build` starts the app and serves both API and client
 
 ---
 

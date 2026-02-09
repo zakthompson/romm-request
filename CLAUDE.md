@@ -17,26 +17,46 @@ A self-hosted web application for requesting games to be added to a RomM collect
 /
 ├── client/                # React frontend (Vite)
 │   ├── src/
-│   │   ├── components/    # Reusable UI components
+│   │   ├── components/
+│   │   │   └── ui/        # shadcn/ui components (Button, Card, Input)
+│   │   ├── lib/
+│   │   │   └── utils.ts   # cn() utility for Tailwind class merging
 │   │   ├── routes/        # TanStack Router file-based routes
-│   │   ├── lib/           # Utilities, API client, hooks
-│   │   └── main.tsx
+│   │   │   ├── __root.tsx # Root layout
+│   │   │   └── index.tsx  # Home page
+│   │   ├── index.css      # Tailwind v4 CSS config with theme variables
+│   │   ├── main.tsx       # App entry point
+│   │   └── routeTree.gen.ts  # Auto-generated (gitignored)
+│   ├── components.json    # shadcn/ui config
+│   ├── vite.config.ts
+│   ├── tsconfig.json
 │   └── package.json
 ├── server/                # Fastify backend
 │   ├── src/
-│   │   ├── routes/        # API route handlers
-│   │   ├── services/      # Business logic (IGDB, email, etc.)
-│   │   ├── db/            # Drizzle schema, migrations
-│   │   ├── plugins/       # Fastify plugins (auth, session, etc.)
-│   │   └── index.ts
+│   │   ├── routes/        # API route handlers (to be created)
+│   │   ├── services/      # Business logic (to be created)
+│   │   ├── db/            # Drizzle schema, migrations (to be created)
+│   │   ├── plugins/       # Fastify plugins (to be created)
+│   │   └── index.ts       # Server entry point, health check, static serving
+│   ├── tsup.config.ts     # Server build config (bundles shared package)
+│   ├── tsconfig.json
 │   └── package.json
 ├── shared/                # Shared TypeScript types & constants
 │   ├── src/
+│   │   └── index.ts       # APP_NAME, RequestStatus type
+│   ├── tsconfig.json
 │   └── package.json
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── .prettierrc            # Prettier config
+├── .prettierignore
 ├── docker-compose.yml
 ├── Dockerfile
+├── eslint.config.js       # ESLint v9 flat config (root, covers all packages)
 ├── package.json           # Root workspace config
-└── pnpm-workspace.yaml
+├── pnpm-workspace.yaml
+└── tsconfig.json          # Root TypeScript config
 ```
 
 ## Key Architectural Decisions
@@ -48,6 +68,16 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **OIDC/OAuth2** — app handles the OAuth flow directly with Authentik; admin users identified by Authentik group claim (configurable group name, e.g. `romm-admin`)
 - **Subdirectory deployment** — runs behind SWAG at a configurable `BASE_PATH` (e.g. `/requests/`)
 - **Production serving** — Fastify serves the built Vite frontend as static files
+
+## Key Implementation Notes
+
+- **Shared package** exports TypeScript source directly (`"import": "./src/index.ts"`) — not compiled JS. This avoids needing to rebuild shared on every change during dev. The server's `tsup.config.ts` uses `noExternal: ["@romm-request/shared"]` to bundle it. Vite handles it natively.
+- **Tailwind CSS v4** — configured via CSS (`@theme` directives in `client/src/index.css`) rather than `tailwind.config.js`. Uses `@tailwindcss/vite` plugin.
+- **shadcn/ui** — components are added manually to `client/src/components/ui/`. The `@/` path alias is configured in both `vite.config.ts` (`resolve.alias`) and `client/tsconfig.json` (`paths`).
+- **Server build** — `tsup` bundles the server entry point and inlines the shared package. Production runs `node server/dist/index.js`.
+- **Client dev proxy** — Vite proxies `/api` requests to `http://localhost:3000` during development.
+- **ESLint** — v9 flat config at project root (`eslint.config.js`). Uses `typescript-eslint`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, and `eslint-config-prettier`. React rules scoped to `client/**`, Node globals scoped to `server/**`.
+- **Prettier** — configured via `.prettierrc`. Run `pnpm format` to auto-format, `pnpm format:check` to validate.
 
 ## Environment Variables
 
@@ -79,6 +109,12 @@ pnpm install              # Install all dependencies
 pnpm dev                  # Run client + server concurrently in dev mode
 pnpm build                # Build all packages for production
 pnpm start                # Start production server
+pnpm lint                 # Run ESLint
+pnpm lint:fix             # Run ESLint with auto-fix
+pnpm format               # Format all files with Prettier
+pnpm format:check         # Check formatting without writing
+pnpm typecheck            # Run TypeScript type checking across all packages
+pnpm check                # Run all checks: lint + format + typecheck
 pnpm db:migrate           # Run database migrations
 pnpm db:studio            # Open Drizzle Studio for DB inspection
 ```
@@ -89,6 +125,16 @@ pnpm db:studio            # Open Drizzle Studio for DB inspection
 docker compose up -d                  # Run with docker-compose
 docker compose up -d --build          # Rebuild and run
 ```
+
+## Mandatory: Code Quality Checks
+
+**Before calling any task done, you MUST run `pnpm check` and resolve all issues.** This runs:
+
+1. `pnpm lint` — ESLint with zero warnings allowed (warnings are treated as errors)
+2. `pnpm format:check` — Prettier formatting validation (run `pnpm format` to fix)
+3. `pnpm typecheck` — TypeScript type checking across all packages
+
+**ESLint rule disabling:** Only disable an ESLint rule when absolutely necessary, and always include a comment explaining why. Prefer fixing the code over suppressing the warning.
 
 ## Mandatory: Keeping Documentation Current
 
