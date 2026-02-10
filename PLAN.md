@@ -248,11 +248,11 @@ The feature is **gracefully disabled** when `ROMM_DB_HOST` is not set — the AP
 
 ### Step 5: Documentation & Config Files & Quality Checks
 
-- [ ] Add RomM DB env vars to `.env.example`
-- [ ] Add RomM DB env vars to `docker-compose.yml`
-- [ ] Update `CLAUDE.md` (project structure, env vars, implementation notes)
-- [ ] Update `ARCHITECTURE.md` (API endpoints, RomM DB integration section, system diagram)
-- [ ] Run `pnpm check` — all checks pass (lint + format + typecheck)
+- [x] Add RomM DB env vars to `.env.example`
+- [x] Add RomM DB env vars to `docker-compose.yml`
+- [x] Update `CLAUDE.md` (project structure, env vars, implementation notes)
+- [x] Update `ARCHITECTURE.md` (API endpoints, RomM DB integration section, system diagram)
+- [x] Run `pnpm check` — all checks pass (lint + format + typecheck)
 
 **Files to modify:**
 
