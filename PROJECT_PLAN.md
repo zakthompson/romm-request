@@ -219,11 +219,12 @@ Finalize for self-hosted production deployment behind SWAG.
   - Verify: app works correctly at both `/` and a subdirectory like `/requests/`
   - Note: `normalizeBasePath()` in `server/src/config.ts` ensures basePath always starts and ends with `/`. Vite reads `BASE_PATH` env var at build time for `base` config option. Exported `apiPath()` helper in `client/src/lib/api.ts` prepends `import.meta.env.BASE_URL` to all API fetch paths. TanStack Router configured with `basepath` in `client/src/main.tsx`. Login href, logout redirect, and dev auth widget all use base-path-aware URLs. Dockerfile passes `BASE_PATH` as build arg. Docker Compose health check dynamically constructs the health URL from `BASE_PATH` env var. `.env.example` documents that `OIDC_REDIRECT_URI` must include `BASE_PATH`.
 
-- [ ] **6.2 Finalize Docker configuration**
+- [x] **6.2 Finalize Docker configuration**
   - Optimize Dockerfile (layer caching, minimal production image, non-root user)
   - `docker-compose.yml`: all env vars documented, persistent volume for SQLite, restart policy
   - Health check in docker-compose using `/api/health`
   - Verify: `docker compose up` from scratch works with only `.env` and `docker-compose.yml`
+  - Note: Dockerfile now uses separate `prod-deps` stage that installs only production dependencies (no devDeps), reducing image size. Migration files (`server/drizzle/`) copied into production image. Runtime auto-migration added to `server/src/db/index.ts` using `drizzle-orm/better-sqlite3/migrator` — migrations run automatically on server startup, eliminating the need for a separate `db:migrate` step in Docker. Non-root `node` user, pnpm store cache mount, and multi-stage build all retained.
 
 - [ ] **6.3 SWAG integration**
   - Provide example SWAG/nginx proxy configuration for subdirectory setup

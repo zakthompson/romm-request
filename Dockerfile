@@ -5,13 +5,21 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Install dependencies
+# Install all dependencies (dev + prod) for building
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY client/package.json client/
 COPY server/package.json server/
 COPY shared/package.json shared/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Install production-only dependencies
+FROM base AS prod-deps
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY client/package.json client/
+COPY server/package.json server/
+COPY shared/package.json shared/
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --prod
 
 # Build
 FROM deps AS build
@@ -24,14 +32,13 @@ RUN pnpm build
 FROM base AS production
 ENV NODE_ENV=production
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/server/node_modules ./server/node_modules
+COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --from=prod-deps /app/server/node_modules ./server/node_modules
 COPY --from=build /app/server/dist ./server/dist
+COPY --from=build /app/server/drizzle ./server/drizzle
 COPY --from=build /app/client/dist ./client/dist
-COPY --from=build /app/shared/dist ./shared/dist
-COPY --from=build /app/shared/package.json ./shared/
-COPY --from=build /app/server/package.json ./server/
-COPY --from=build /app/package.json ./
+COPY package.json ./
+COPY server/package.json ./server/
 
 RUN mkdir -p /app/data && chown -R node:node /app/data
 
