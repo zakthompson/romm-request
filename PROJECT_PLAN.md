@@ -226,10 +226,11 @@ Finalize for self-hosted production deployment behind SWAG.
   - Verify: `docker compose up` from scratch works with only `.env` and `docker-compose.yml`
   - Note: Dockerfile now uses separate `prod-deps` stage that installs only production dependencies (no devDeps), reducing image size. Migration files (`server/drizzle/`) copied into production image. Runtime auto-migration added to `server/src/db/index.ts` using `drizzle-orm/better-sqlite3/migrator` — migrations run automatically on server startup, eliminating the need for a separate `db:migrate` step in Docker. Non-root `node` user, pnpm store cache mount, and multi-stage build all retained.
 
-- [ ] **6.3 SWAG integration**
+- [x] **6.3 SWAG integration**
   - Provide example SWAG/nginx proxy configuration for subdirectory setup
   - Document any CORS or cookie settings needed for the reverse proxy
   - Verify: app accessible through SWAG at configured subdirectory
+  - Note: Two example SWAG/nginx configs provided: `romm-request.subdomain.conf.example` (subdomain mode) and `romm-request.subfolder.conf.example` (subfolder mode). Deployment section added to `ARCHITECTURE.md` covering Docker build stages, subdirectory deployment mechanics, and cookie/proxy considerations (trustProxy, sameSite, httpOnly).
 
 - [ ] **6.4 Final polish and documentation**
   - Error handling review: all API errors return consistent JSON shape

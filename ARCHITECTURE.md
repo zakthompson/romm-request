@@ -185,3 +185,49 @@ Server                          Twitch                    IGDB
 - **IGDBService** (`server/src/services/igdb.ts`) — Twitch token management, game search/details queries
 - **RequestService** (`server/src/services/requests.ts`) — Request CRUD, duplicate pending detection, status transitions (pending → fulfilled/rejected), joins users for requester info
 - **EmailService** (`server/src/services/email.ts`) — Nodemailer SMTP transport (lazy init, disabled when `SMTP_HOST` unset), HTML templates (new request → admin, status change → requester), fire-and-forget sending
+
+## Deployment
+
+### Docker
+
+Multi-stage Dockerfile with four stages: `base`, `deps`, `prod-deps`, `build`, `production`.
+
+- **base**: `node:22-slim` with pnpm enabled via corepack
+- **deps**: Installs all dependencies (dev + prod) for building
+- **prod-deps**: Installs production-only dependencies (no devDeps)
+- **build**: Builds all packages; accepts `BASE_PATH` build arg for Vite
+- **production**: Copies only production deps, built server, built client, and migration files. Runs as non-root `node` user.
+
+Database migrations run automatically on server startup via `drizzle-orm/better-sqlite3/migrator`.
+
+### Subdirectory Deployment (BASE_PATH)
+
+The app supports deployment at a URL subdirectory (e.g. `https://example.com/requests/`).
+
+**How it works:**
+
+1. `BASE_PATH` env var (e.g. `/requests/`) is normalized to always start and end with `/`
+2. At **build time**: Vite reads `BASE_PATH` and sets it as the `base` config, so all asset URLs in the built HTML are prefixed correctly
+3. At **runtime**: Fastify prefixes all API routes and static file serving with `basePath`
+4. The client uses `import.meta.env.BASE_URL` (set by Vite from `base`) to prefix API calls and configure TanStack Router's `basepath`
+
+**Configuration for subdirectory deployment:**
+
+```env
+BASE_PATH=/requests/
+APP_URL=https://yourdomain.com
+OIDC_REDIRECT_URI=https://yourdomain.com/requests/api/auth/callback
+```
+
+**Important:** `BASE_PATH` is a build-time value for the client (baked into the Vite build). If you change `BASE_PATH`, you must rebuild the Docker image.
+
+### SWAG / Nginx Reverse Proxy
+
+Example configs are provided in the project root:
+
+- `romm-request.subdomain.conf.example` — for subdomain deployment (e.g. `requests.example.com`)
+- `romm-request.subfolder.conf.example` — for subfolder deployment (e.g. `example.com/requests/`)
+
+Copy the appropriate file to your SWAG nginx proxy-confs directory and customize.
+
+**Cookie considerations**: The session cookie uses `sameSite: 'lax'` and `httpOnly: true`. When behind a reverse proxy, ensure `trustProxy` is enabled (it is — Fastify's `trustProxy` is set to `true` in production) so the session cookie's `secure` flag works correctly with HTTPS termination at the proxy.

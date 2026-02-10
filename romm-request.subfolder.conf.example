@@ -1,0 +1,19 @@
+## Version 2024/07/16
+# SWAG nginx config for RomM Request — subfolder (subdirectory) mode
+# Place this file in your SWAG config directory:
+#   /path/to/swag/config/nginx/proxy-confs/romm-request.subfolder.conf
+#
+# Prerequisites:
+#   1. Set BASE_PATH=/requests/ in your .env file
+#   2. Rebuild the Docker image: docker compose up -d --build
+#   3. Set APP_URL=https://yourdomain.com in your .env file
+#   4. Set OIDC_REDIRECT_URI=https://yourdomain.com/requests/api/auth/callback
+
+location /requests/ {
+    include /config/nginx/proxy.conf;
+    include /config/nginx/resolver.conf;
+    set $upstream_app romm-request;
+    set $upstream_port 3000;
+    set $upstream_proto http;
+    proxy_pass $upstream_proto://$upstream_app:$upstream_port;
+}
