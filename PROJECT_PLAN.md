@@ -143,7 +143,7 @@ Core feature: users create requests, view their history; admins manage all reque
   - Verify: table created, types importable from shared
   - Note: Schema in `server/src/db/schema.ts`. Migration `0001_create-requests-table.sql` includes a partial unique index (`WHERE status = 'pending'`) on `(user_id, igdb_game_id, platform_igdb_id)` to prevent duplicate pending requests — added manually since Drizzle doesn't support partial indexes natively. Shared package updated with `CreateRequestBody`, `UpdateRequestBody`, `RequestDto` types and `REQUEST_STATUSES` constant.
 
-- [ ] **4.2 Request API endpoints**
+- [x] **4.2 Request API endpoints**
   - `POST /api/requests` — create a new request (authenticated users)
   - `GET /api/requests` — list requests (users see own, admins see all; supports `?status=` filter)
   - `GET /api/requests/:id` — get single request details
@@ -151,6 +151,7 @@ Core feature: users create requests, view their history; admins manage all reque
   - Prevent duplicate requests (same user + same game + same platform while pending)
   - Input validation on all endpoints
   - Verify: CRUD operations work, authorization enforced, duplicates rejected
+  - Note: Service in `server/src/services/requests.ts` with `createRequest`, `listRequests`, `getRequestById`, `updateRequestStatus` functions. Routes in `server/src/routes/requests.ts`, registered at `{basePath}api/requests`. All routes require auth; PATCH requires admin. Duplicate detection via application-level check (backed by partial unique index). List endpoint joins with users table to include requester info. Non-admin users can only see their own requests.
 
 - [ ] **4.3 Request creation flow (frontend)**
   - Full flow: search game → select game → choose platform → confirm & submit
