@@ -166,10 +166,11 @@ Core feature: users create requests, view their history; admins manage all reque
   - Verify: page displays requests accurately, updates after new submission
   - Note: Implemented in `client/src/routes/_authenticated/requests.tsx`. Uses TanStack Query with 30s stale time. Status filter badges (All/Pending/Fulfilled/Rejected) drive query params. Each request shown as a card with cover art, game name, platform, status badge with icon, date, and admin notes (if any). Empty state encourages searching for games. Skeleton loading state for UX.
 
-- [ ] **4.5 Admin request management**
+- [x] **4.5 Admin request management**
   - Admin request list page: shows all requests, filterable by status (default: pending)
   - Request detail view with ability to mark as fulfilled or rejected, with optional admin notes
   - Verify: admin can view all requests and change status; changes reflected immediately
+  - Note: Implemented in `client/src/routes/_authenticated/admin/requests.tsx`. Default filter is "Pending". Clickable request cards open a detail dialog showing requester info, with Fulfill/Reject buttons and optional admin notes textarea. Added `Textarea` shadcn/ui component (`client/src/components/ui/textarea.tsx`). Status updates via PATCH mutation that invalidates all request caches. Dialog auto-closes on success.
 
 - [ ] **4.6 Admin configuration page**
   - Accessible from admin sidebar
