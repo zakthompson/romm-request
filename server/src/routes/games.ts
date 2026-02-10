@@ -15,8 +15,15 @@ export default async function gameRoutes(app: FastifyInstance) {
           .send({ error: 'Query parameter "q" must be at least 2 characters' });
       }
 
-      const results = await searchGames(query);
-      return results;
+      try {
+        const results = await searchGames(query);
+        return results;
+      } catch (err) {
+        app.log.error(err, 'IGDB search failed');
+        return reply
+          .code(502)
+          .send({ error: 'Failed to search games. Please try again later.' });
+      }
     }
   );
 
@@ -26,11 +33,17 @@ export default async function gameRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Invalid game ID' });
     }
 
-    const game = await getGameDetails(id);
-    if (!game) {
-      return reply.code(404).send({ error: 'Game not found' });
+    try {
+      const game = await getGameDetails(id);
+      if (!game) {
+        return reply.code(404).send({ error: 'Game not found' });
+      }
+      return game;
+    } catch (err) {
+      app.log.error(err, 'IGDB game detail fetch failed');
+      return reply.code(502).send({
+        error: 'Failed to load game details. Please try again later.',
+      });
     }
-
-    return game;
   });
 }

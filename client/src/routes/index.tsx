@@ -1,4 +1,5 @@
 import { createFileRoute, Navigate } from '@tanstack/react-router';
+import { Loader2 } from 'lucide-react';
 import { APP_NAME } from '@romm-request/shared';
 import { Button } from '@/components/ui/button';
 import {
@@ -9,6 +10,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
+import { apiPath } from '@/lib/api';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -20,7 +22,7 @@ function HomePage() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
       </div>
     );
   }
@@ -40,7 +42,7 @@ function HomePage() {
         </CardHeader>
         <CardContent className="flex justify-center">
           <Button asChild>
-            <a href="/api/auth/login">Sign In</a>
+            <a href={apiPath('/api/auth/login')}>Sign In</a>
           </Button>
         </CardContent>
       </Card>

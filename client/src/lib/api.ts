@@ -8,6 +8,12 @@ export class ApiError extends Error {
   }
 }
 
+const BASE = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+export function apiPath(path: string): string {
+  return `${BASE}${path}`;
+}
+
 export async function apiFetch<T>(
   path: string,
   options?: RequestInit
@@ -17,7 +23,7 @@ export async function apiFetch<T>(
     (headers as Record<string, string>)['Content-Type'] = 'application/json';
   }
 
-  const response = await fetch(path, { ...options, headers });
+  const response = await fetch(apiPath(path), { ...options, headers });
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

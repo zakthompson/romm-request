@@ -18,19 +18,21 @@ A self-hosted web application for requesting games to be added to a RomM collect
 ├── client/                # React frontend (Vite)
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── error-boundary.tsx     # React Error Boundary (catches rendering crashes)
+│   │   │   ├── dev-auth-widget.tsx    # Dev-only login widget (floating button)
 │   │   │   ├── nav-bar.tsx            # App navigation bar (auth-aware, admin links)
 │   │   │   ├── game-result-card.tsx   # Game search result card (cover, title, year)
 │   │   │   ├── game-detail-dialog.tsx # Game detail dialog (summary, platforms, request submission)
 │   │   │   └── ui/          # shadcn/ui components (Badge, Button, Card, Dialog, DropdownMenu, Input, ScrollArea, Separator, Skeleton, Textarea)
 │   │   ├── lib/
-│   │   │   ├── api.ts       # Typed API client (apiFetch, ApiError)
+│   │   │   ├── api.ts       # Typed API client (apiFetch, apiPath, ApiError)
 │   │   │   ├── auth.ts      # useAuth hook, authQueryOptions, User type
 │   │   │   ├── request-utils.ts # Shared request status config and filter definitions
 │   │   │   ├── utils.ts     # cn() utility for Tailwind class merging
 │   │   │   └── hooks/
 │   │   │       └── use-debounce.ts  # Generic debounce hook
 │   │   ├── routes/          # TanStack Router file-based routes
-│   │   │   ├── __root.tsx   # Root layout
+│   │   │   ├── __root.tsx   # Root layout (with ErrorBoundary)
 │   │   │   ├── index.tsx    # Home/login page (redirects if authenticated)
 │   │   │   └── _authenticated.tsx  # Auth-protected layout wrapper
 │   │   │       ├── search.tsx          # Game search page
@@ -58,7 +60,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   │   │   ├── igdb.ts    # IGDB API client (Twitch auth, search, details)
 │   │   │   └── requests.ts # Request CRUD operations (create, list, get, update)
 │   │   ├── db/
-│   │   │   ├── index.ts   # Database connection (better-sqlite3 + Drizzle)
+│   │   │   ├── index.ts   # Database connection + auto-migration (better-sqlite3 + Drizzle)
 │   │   │   └── schema.ts  # Drizzle table definitions (users, requests)
 │   │   ├── plugins/
 │   │   │   ├── auth.ts    # requireAuth, requireAdmin hooks
@@ -82,10 +84,13 @@ A self-hosted web application for requesting games to be added to a RomM collect
 ├── .prettierrc            # Prettier config
 ├── .prettierignore
 ├── docker-compose.yml
-├── Dockerfile
+├── Dockerfile             # Multi-stage: base → deps → prod-deps → build → production
 ├── eslint.config.js       # ESLint v9 flat config (root, covers all packages)
 ├── package.json           # Root workspace config
 ├── pnpm-workspace.yaml
+├── README.md              # Setup instructions and configuration reference
+├── romm-request.subdomain.conf.example  # SWAG nginx config (subdomain mode)
+├── romm-request.subfolder.conf.example  # SWAG nginx config (subfolder mode)
 └── tsconfig.json          # Root TypeScript config
 ```
 
@@ -105,10 +110,10 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **Tailwind CSS v4** — configured via CSS (`@theme` directives in `client/src/index.css`) rather than `tailwind.config.js`. Uses `@tailwindcss/vite` plugin.
 - **shadcn/ui** — components are added manually to `client/src/components/ui/`. The `@/` path alias is configured in both `vite.config.ts` (`resolve.alias`) and `client/tsconfig.json` (`paths`).
 - **Server build** — `tsup` bundles the server entry point and inlines the shared package. Production runs `node server/dist/index.js`.
-- **Client dev proxy** — Vite proxies `/api` requests to `http://localhost:3000` during development.
+- **Client dev proxy** — Vite proxies `{basePath}api` requests to `http://localhost:3000` during development.
 - **ESLint** — v9 flat config at project root (`eslint.config.js`). Uses `typescript-eslint`, `eslint-plugin-react`, `eslint-plugin-react-hooks`, and `eslint-config-prettier`. React rules scoped to `client/**`, Node globals scoped to `server/**`.
 - **Prettier** — configured via `.prettierrc`. Run `pnpm format` to auto-format, `pnpm format:check` to validate.
-- **Database** — SQLite via better-sqlite3 with Drizzle ORM. WAL mode and foreign keys enabled. Migrations in `server/drizzle/`, run via `pnpm db:migrate`. Config in `server/drizzle.config.ts`. **Always generate migrations with descriptive names:** `drizzle-kit generate --name <name>` (e.g. `create-users-table`). Never use the default random names.
+- **Database** — SQLite via better-sqlite3 with Drizzle ORM. WAL mode and foreign keys enabled. Migrations in `server/drizzle/`, generated via `drizzle-kit generate --name <name>`. Auto-migration runs on server startup via `drizzle-orm/better-sqlite3/migrator` (`server/src/db/index.ts`). **Always generate migrations with descriptive names** (e.g. `create-users-table`). Never use the default random names.
 - **Auth (backend)** — OIDC/OAuth2 via `openid-client` v6 with PKCE. Session via `@fastify/secure-session` (encrypted cookie, secret+salt). Config module (`server/src/config.ts`) with lazy getters for OIDC env vars. Type augmentations in `server/src/types.d.ts`.
 - **Auth (frontend)** — `useAuth` hook (`client/src/lib/auth.ts`) queries `/api/auth/me` via TanStack Query. `_authenticated` layout route protects all authenticated pages. Admin routes check `isAdmin` in the component body. API client (`client/src/lib/api.ts`) with typed error handling.
 - **Route protection** — Backend: `requireAuth` and `requireAdmin` hooks in `server/src/plugins/auth.ts`. Frontend: `_authenticated` layout route redirects to `/` if not authenticated; admin pages redirect to `/search` if not admin.
@@ -116,6 +121,9 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **Request system** — Service in `server/src/services/requests.ts` with pure functions (`createRequest`, `listRequests`, `getRequestById`, `updateRequestStatus`). Routes in `server/src/routes/requests.ts` at `{basePath}api/requests`. Duplicate pending request prevention via application-level check backed by partial unique index in DB. List endpoint joins `users` table to include requester info. Non-admin users restricted to their own requests. Status transitions: only `pending` → `fulfilled`/`rejected` allowed. Frontend uses `useMutation` for create/update with query cache invalidation.
 - **Admin config** — `GET /api/admin/config` in `server/src/routes/admin.ts` exposes safe (non-secret) config values. Frontend displays in categorized cards with configured/not-configured status badges.
 - **Email notifications** — `server/src/services/email.ts` uses Nodemailer with lazy transporter initialization. Gracefully disabled when `SMTP_HOST` is not set (returns `null` config). Supports authenticated and unauthenticated SMTP, auto-enables TLS on port 465. HTML email templates use inline styles for email client compatibility. Two notification types: admin notification on new request creation, user notification on request status change (fulfilled/rejected). Both are fire-and-forget (non-blocking) — failures are logged but don't affect API responses.
+- **BASE_PATH / subdirectory** — `normalizeBasePath()` in `server/src/config.ts` ensures basePath always starts and ends with `/`. Vite reads `BASE_PATH` env var at build time for `base` config. Client uses `import.meta.env.BASE_URL` via `apiPath()` helper (`client/src/lib/api.ts`) to prefix all API calls. TanStack Router configured with `basepath` in `client/src/main.tsx`. `BASE_PATH` is a **build-time** value for the client — changing it requires a rebuild. Dockerfile accepts `BASE_PATH` as a build arg.
+- **Error boundary** — `ErrorBoundary` class component (`client/src/components/error-boundary.tsx`) wraps the entire app at the root layout. Catches unhandled rendering errors and shows a reload prompt.
+- **Docker** — Multi-stage Dockerfile with `prod-deps` stage for production-only dependencies. Migration files included in production image. Auto-migration on startup eliminates the need for a separate `db:migrate` step.
 
 ## Environment Variables
 

@@ -211,26 +211,30 @@ Notify admin of new requests and requesters when their request status changes.
 
 Finalize for self-hosted production deployment behind SWAG.
 
-- [ ] **6.1 Subdirectory (BASE_PATH) support**
+- [x] **6.1 Subdirectory (BASE_PATH) support**
   - Vite config: set `base` to `BASE_PATH` at build time
   - Fastify: prefix all API routes and static serving with `BASE_PATH`
   - TanStack Router: configure `basepath` option
   - Auth callback URLs respect `BASE_PATH`
   - Verify: app works correctly at both `/` and a subdirectory like `/requests/`
+  - Note: `normalizeBasePath()` in `server/src/config.ts` ensures basePath always starts and ends with `/`. Vite reads `BASE_PATH` env var at build time for `base` config option. Exported `apiPath()` helper in `client/src/lib/api.ts` prepends `import.meta.env.BASE_URL` to all API fetch paths. TanStack Router configured with `basepath` in `client/src/main.tsx`. Login href, logout redirect, and dev auth widget all use base-path-aware URLs. Dockerfile passes `BASE_PATH` as build arg. Docker Compose health check dynamically constructs the health URL from `BASE_PATH` env var. `.env.example` documents that `OIDC_REDIRECT_URI` must include `BASE_PATH`.
 
-- [ ] **6.2 Finalize Docker configuration**
+- [x] **6.2 Finalize Docker configuration**
   - Optimize Dockerfile (layer caching, minimal production image, non-root user)
   - `docker-compose.yml`: all env vars documented, persistent volume for SQLite, restart policy
   - Health check in docker-compose using `/api/health`
   - Verify: `docker compose up` from scratch works with only `.env` and `docker-compose.yml`
+  - Note: Dockerfile now uses separate `prod-deps` stage that installs only production dependencies (no devDeps), reducing image size. Migration files (`server/drizzle/`) copied into production image. Runtime auto-migration added to `server/src/db/index.ts` using `drizzle-orm/better-sqlite3/migrator` — migrations run automatically on server startup, eliminating the need for a separate `db:migrate` step in Docker. Non-root `node` user, pnpm store cache mount, and multi-stage build all retained.
 
-- [ ] **6.3 SWAG integration**
+- [x] **6.3 SWAG integration**
   - Provide example SWAG/nginx proxy configuration for subdirectory setup
   - Document any CORS or cookie settings needed for the reverse proxy
   - Verify: app accessible through SWAG at configured subdirectory
+  - Note: Two example SWAG/nginx configs provided: `romm-request.subdomain.conf.example` (subdomain mode) and `romm-request.subfolder.conf.example` (subfolder mode). Deployment section added to `ARCHITECTURE.md` covering Docker build stages, subdirectory deployment mechanics, and cookie/proxy considerations (trustProxy, sameSite, httpOnly).
 
-- [ ] **6.4 Final polish and documentation**
+- [x] **6.4 Final polish and documentation**
   - Error handling review: all API errors return consistent JSON shape
   - Loading and error states in all frontend pages
   - Update README with setup instructions, screenshots, configuration reference
   - Verify: clean startup from scratch following only the README
+  - Note: Added React ErrorBoundary component wrapping the app root. IGDB route handlers now wrap service calls in try-catch and return `502` with user-friendly messages instead of unhandled 500s. Logout handles fetch errors gracefully. Loading states use spinner (`Loader2`) instead of plain text. README.md created with Quick Start, configuration reference, subdirectory deployment, SWAG/nginx, Authentik setup, and development instructions. CLAUDE.md and ARCHITECTURE.md updated with all new patterns and files.

@@ -88,8 +88,7 @@ export default async function authRoutes(app: FastifyInstance) {
 
     request.session.set('userId', user.id);
 
-    const redirectTarget = config.basePath === '/' ? '/' : config.basePath;
-    return reply.redirect(redirectTarget);
+    return reply.redirect(config.basePath);
   });
 
   app.post('/logout', async (request) => {
