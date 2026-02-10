@@ -15,7 +15,7 @@
     "check": "pnpm lint && pnpm format:check && pnpm typecheck",
     "db:migrate": "pnpm --filter server db:migrate",
     "db:studio": "pnpm --filter server db:studio",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
