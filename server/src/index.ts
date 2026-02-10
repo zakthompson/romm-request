@@ -8,6 +8,8 @@ import sessionPlugin from './plugins/session.js';
 import authPlugin from './plugins/auth.js';
 import authRoutes from './routes/auth.js';
 import gameRoutes from './routes/games.js';
+import requestRoutes from './routes/requests.js';
+import adminRoutes from './routes/admin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -28,6 +30,10 @@ app.get(`${config.basePath}api/health`, async () => ({
 
 await app.register(authRoutes, { prefix: `${config.basePath}api/auth` });
 await app.register(gameRoutes, { prefix: `${config.basePath}api/games` });
+await app.register(requestRoutes, {
+  prefix: `${config.basePath}api/requests`,
+});
+await app.register(adminRoutes, { prefix: `${config.basePath}api/admin` });
 
 if (config.isProduction) {
   const clientDistPath = path.resolve(__dirname, '../../client/dist');

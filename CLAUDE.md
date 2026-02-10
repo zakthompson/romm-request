@@ -20,11 +20,12 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   │   ├── components/
 │   │   │   ├── nav-bar.tsx            # App navigation bar (auth-aware, admin links)
 │   │   │   ├── game-result-card.tsx   # Game search result card (cover, title, year)
-│   │   │   ├── game-detail-dialog.tsx # Game detail dialog (summary, platforms)
-│   │   │   └── ui/          # shadcn/ui components (Badge, Button, Card, Dialog, DropdownMenu, Input, ScrollArea, Separator, Skeleton)
+│   │   │   ├── game-detail-dialog.tsx # Game detail dialog (summary, platforms, request submission)
+│   │   │   └── ui/          # shadcn/ui components (Badge, Button, Card, Dialog, DropdownMenu, Input, ScrollArea, Separator, Skeleton, Textarea)
 │   │   ├── lib/
 │   │   │   ├── api.ts       # Typed API client (apiFetch, ApiError)
 │   │   │   ├── auth.ts      # useAuth hook, authQueryOptions, User type
+│   │   │   ├── request-utils.ts # Shared request status config and filter definitions
 │   │   │   ├── utils.ts     # cn() utility for Tailwind class merging
 │   │   │   └── hooks/
 │   │   │       └── use-debounce.ts  # Generic debounce hook
@@ -32,11 +33,11 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   │   │   ├── __root.tsx   # Root layout
 │   │   │   ├── index.tsx    # Home/login page (redirects if authenticated)
 │   │   │   └── _authenticated.tsx  # Auth-protected layout wrapper
-│   │   │       ├── search.tsx          # Game search (placeholder)
-│   │   │       ├── requests.tsx        # User request history (placeholder)
+│   │   │       ├── search.tsx          # Game search page
+│   │   │       ├── requests.tsx        # User request history page
 │   │   │       └── admin/
-│   │   │           ├── requests.tsx    # Admin: all requests (placeholder)
-│   │   │           └── config.tsx      # Admin: configuration (placeholder)
+│   │   │           ├── requests.tsx    # Admin: request management (fulfill/reject)
+│   │   │           └── config.tsx      # Admin: configuration display
 │   │   ├── index.css        # Tailwind v4 CSS config with theme variables
 │   │   ├── main.tsx         # App entry point
 │   │   └── routeTree.gen.ts # Auto-generated (gitignored)
@@ -48,13 +49,16 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   ├── src/
 │   │   ├── routes/
 │   │   │   ├── auth.ts    # Auth routes (login, callback, me, logout)
-│   │   │   └── games.ts   # Game search & detail routes (IGDB proxy)
+│   │   │   ├── games.ts   # Game search & detail routes (IGDB proxy)
+│   │   │   ├── requests.ts # Request CRUD routes (create, list, get, update status)
+│   │   │   └── admin.ts   # Admin routes (config endpoint)
 │   │   ├── services/
 │   │   │   ├── auth.ts    # User upsert, getUserById
-│   │   │   └── igdb.ts    # IGDB API client (Twitch auth, search, details)
+│   │   │   ├── igdb.ts    # IGDB API client (Twitch auth, search, details)
+│   │   │   └── requests.ts # Request CRUD operations (create, list, get, update)
 │   │   ├── db/
 │   │   │   ├── index.ts   # Database connection (better-sqlite3 + Drizzle)
-│   │   │   └── schema.ts  # Drizzle table definitions (users)
+│   │   │   └── schema.ts  # Drizzle table definitions (users, requests)
 │   │   ├── plugins/
 │   │   │   ├── auth.ts    # requireAuth, requireAdmin hooks
 │   │   │   └── session.ts # @fastify/secure-session setup
@@ -68,7 +72,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   └── package.json
 ├── shared/                # Shared TypeScript types & constants
 │   ├── src/
-│   │   └── index.ts       # APP_NAME, RequestStatus type
+│   │   └── index.ts       # APP_NAME, RequestStatus, request DTOs (CreateRequestBody, UpdateRequestBody, RequestDto)
 │   ├── tsconfig.json
 │   └── package.json
 ├── .dockerignore
@@ -108,6 +112,8 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **Auth (frontend)** — `useAuth` hook (`client/src/lib/auth.ts`) queries `/api/auth/me` via TanStack Query. `_authenticated` layout route protects all authenticated pages. Admin routes check `isAdmin` in the component body. API client (`client/src/lib/api.ts`) with typed error handling.
 - **Route protection** — Backend: `requireAuth` and `requireAdmin` hooks in `server/src/plugins/auth.ts`. Frontend: `_authenticated` layout route redirects to `/` if not authenticated; admin pages redirect to `/search` if not admin.
 - **IGDB integration** — `server/src/services/igdb.ts` handles Twitch OAuth2 client credentials flow for API access. Token is cached in memory and refreshed 60 seconds before expiry. Uses Apicalypse query syntax (plain text POST body) to `https://api.igdb.com/v4/games`. Search filters to main games only (`category = 0`, no `version_parent`). Cover images use `https://images.igdb.com/igdb/image/upload/t_{size}/{image_id}.jpg`. IGDB config uses lazy getter pattern to avoid startup failures. Rate limit: 4 req/sec (frontend caching via TanStack Query stale times mitigates this).
+- **Request system** — Service in `server/src/services/requests.ts` with pure functions (`createRequest`, `listRequests`, `getRequestById`, `updateRequestStatus`). Routes in `server/src/routes/requests.ts` at `{basePath}api/requests`. Duplicate pending request prevention via application-level check backed by partial unique index in DB. List endpoint joins `users` table to include requester info. Non-admin users restricted to their own requests. Status transitions: only `pending` → `fulfilled`/`rejected` allowed. Frontend uses `useMutation` for create/update with query cache invalidation.
+- **Admin config** — `GET /api/admin/config` in `server/src/routes/admin.ts` exposes safe (non-secret) config values. Frontend displays in categorized cards with configured/not-configured status badges.
 
 ## Environment Variables
 

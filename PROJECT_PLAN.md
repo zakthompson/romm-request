@@ -136,13 +136,14 @@ Integrate with the IGDB API to enable game searching and platform selection.
 
 Core feature: users create requests, view their history; admins manage all requests.
 
-- [ ] **4.1 Create requests table**
+- [x] **4.1 Create requests table**
   - Schema: `id`, `user_id` (FK), `igdb_game_id`, `game_name`, `game_cover_url`, `platform_name`, `platform_igdb_id`, `status` (pending/fulfilled/rejected), `admin_notes`, `created_at`, `updated_at`, `fulfilled_at`
   - Migration
   - Shared types for request status enum and request DTOs
   - Verify: table created, types importable from shared
+  - Note: Schema in `server/src/db/schema.ts`. Migration `0001_create-requests-table.sql` includes a partial unique index (`WHERE status = 'pending'`) on `(user_id, igdb_game_id, platform_igdb_id)` to prevent duplicate pending requests — added manually since Drizzle doesn't support partial indexes natively. Shared package updated with `CreateRequestBody`, `UpdateRequestBody`, `RequestDto` types and `REQUEST_STATUSES` constant.
 
-- [ ] **4.2 Request API endpoints**
+- [x] **4.2 Request API endpoints**
   - `POST /api/requests` — create a new request (authenticated users)
   - `GET /api/requests` — list requests (users see own, admins see all; supports `?status=` filter)
   - `GET /api/requests/:id` — get single request details
@@ -150,27 +151,32 @@ Core feature: users create requests, view their history; admins manage all reque
   - Prevent duplicate requests (same user + same game + same platform while pending)
   - Input validation on all endpoints
   - Verify: CRUD operations work, authorization enforced, duplicates rejected
+  - Note: Service in `server/src/services/requests.ts` with `createRequest`, `listRequests`, `getRequestById`, `updateRequestStatus` functions. Routes in `server/src/routes/requests.ts`, registered at `{basePath}api/requests`. All routes require auth; PATCH requires admin. Duplicate detection via application-level check (backed by partial unique index). List endpoint joins with users table to include requester info. Non-admin users can only see their own requests.
 
-- [ ] **4.3 Request creation flow (frontend)**
+- [x] **4.3 Request creation flow (frontend)**
   - Full flow: search game → select game → choose platform → confirm & submit
   - Success/error feedback after submission
   - Verify: user can complete the full request flow end-to-end
+  - Note: Updated `GameDetailDialog` to support platform selection (clickable badges) and request submission via `useMutation`. Shows success confirmation with link to My Requests page. Displays API errors (including duplicate detection) inline. State resets when dialog closes. Invalidates `['requests']` query cache on success.
 
-- [ ] **4.4 User request history page**
+- [x] **4.4 User request history page**
   - List of current user's requests with status badges (pending/fulfilled/rejected)
   - Sorted by most recent, optionally filterable by status
   - Shows game cover, name, platform, date requested
   - Verify: page displays requests accurately, updates after new submission
+  - Note: Implemented in `client/src/routes/_authenticated/requests.tsx`. Uses TanStack Query with 30s stale time. Status filter badges (All/Pending/Fulfilled/Rejected) drive query params. Each request shown as a card with cover art, game name, platform, status badge with icon, date, and admin notes (if any). Empty state encourages searching for games. Skeleton loading state for UX.
 
-- [ ] **4.5 Admin request management**
+- [x] **4.5 Admin request management**
   - Admin request list page: shows all requests, filterable by status (default: pending)
   - Request detail view with ability to mark as fulfilled or rejected, with optional admin notes
   - Verify: admin can view all requests and change status; changes reflected immediately
+  - Note: Implemented in `client/src/routes/_authenticated/admin/requests.tsx`. Default filter is "Pending". Clickable request cards open a detail dialog showing requester info, with Fulfill/Reject buttons and optional admin notes textarea. Added `Textarea` shadcn/ui component (`client/src/components/ui/textarea.tsx`). Status updates via PATCH mutation that invalidates all request caches. Dialog auto-closes on success.
 
-- [ ] **4.6 Admin configuration page**
+- [x] **4.6 Admin configuration page**
   - Accessible from admin sidebar
   - For now, minimal: display current configuration (read from env), placeholder for future settings
   - Verify: page renders, is admin-only
+  - Note: Backend endpoint `GET /api/admin/config` (in `server/src/routes/admin.ts`) exposes safe config values (no secrets). Frontend page in `client/src/routes/_authenticated/admin/config.tsx` displays configuration in categorized cards: Application, Database, Authentication, IGDB, Email. Shows configured/not-configured status badges for optional integrations.
 
 ---
 
