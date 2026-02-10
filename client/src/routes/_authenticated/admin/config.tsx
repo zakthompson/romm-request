@@ -60,7 +60,7 @@ function AdminConfigPage() {
   const cfg = configQuery.data;
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
+    <div className="mx-auto max-w-4xl px-6 py-6 lg:px-8">
       <h1 className="text-2xl font-bold">Configuration</h1>
       <p className="text-muted-foreground mt-1 mb-6">
         Current server configuration (read-only).

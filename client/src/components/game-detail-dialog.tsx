@@ -138,7 +138,7 @@ export function GameDetailDialog({
             </DialogHeader>
 
             <div className="flex gap-4">
-              <div className="w-32 shrink-0">
+              <div className="w-40 shrink-0">
                 {game.coverUrl ? (
                   <img
                     src={game.coverUrl}

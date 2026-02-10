@@ -38,7 +38,7 @@ function AdminRequestsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div className="mx-auto max-w-6xl px-6 py-6 lg:px-8">
       <h1 className="text-2xl font-bold">All Requests</h1>
       <p className="text-muted-foreground mt-1 mb-4">
         Manage game requests from all users.
