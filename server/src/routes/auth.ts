@@ -49,7 +49,10 @@ export default async function authRoutes(app: FastifyInstance) {
       return reply.code(400).send({ error: 'Invalid session state' });
     }
 
-    request.session.delete();
+    // Clear OIDC state individually — session.delete() sets a "deleted" flag
+    // that prevents subsequent set() calls from persisting in the cookie
+    request.session.set('oidc_code_verifier', '');
+    request.session.set('oidc_state', '');
 
     const currentUrl = new URL(
       request.url,
