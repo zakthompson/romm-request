@@ -1,7 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { Gamepad2 } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Gamepad2, Check, Loader2 } from 'lucide-react';
+import { apiFetch, ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Dialog,
@@ -11,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
+import type { CreateRequestBody, RequestDto } from '@romm-request/shared';
 
 interface GameDetail {
   id: number;
@@ -35,6 +38,11 @@ export function GameDetailDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const [selectedPlatformId, setSelectedPlatformId] = useState<number | null>(
+    null
+  );
+  const queryClient = useQueryClient();
+
   const detailQuery = useQuery({
     queryKey: ['games', 'detail', gameId],
     queryFn: () => apiFetch<GameDetail>(`/api/games/${gameId}`),
@@ -42,10 +50,44 @@ export function GameDetailDialog({
     staleTime: 10 * 60 * 1000,
   });
 
+  const submitMutation = useMutation({
+    mutationFn: (body: CreateRequestBody) =>
+      apiFetch<RequestDto>('/api/requests', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests'] });
+    },
+  });
+
   const game = detailQuery.data;
+  const selectedPlatform = game?.platforms.find(
+    (p) => p.id === selectedPlatformId
+  );
+
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      setSelectedPlatformId(null);
+      submitMutation.reset();
+    }
+    onOpenChange(nextOpen);
+  }
+
+  function handleSubmit() {
+    if (!game || !selectedPlatform) return;
+
+    submitMutation.mutate({
+      igdbGameId: game.id,
+      gameName: game.name,
+      gameCoverUrl: game.coverUrl,
+      platformName: selectedPlatform.name,
+      platformIgdbId: selectedPlatform.id,
+    });
+  }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         {detailQuery.isLoading && <DetailSkeleton />}
 
@@ -96,17 +138,78 @@ export function GameDetailDialog({
                 <Separator />
                 <div>
                   <p className="mb-2 text-sm font-medium">
-                    Available Platforms
+                    {submitMutation.isSuccess
+                      ? 'Requested Platform'
+                      : 'Select a Platform to Request'}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {game.platforms.map((platform) => (
-                      <Badge key={platform.id} variant="secondary">
+                      <Badge
+                        key={platform.id}
+                        variant={
+                          selectedPlatformId === platform.id
+                            ? 'default'
+                            : 'secondary'
+                        }
+                        className={
+                          submitMutation.isSuccess
+                            ? ''
+                            : 'cursor-pointer transition-colors'
+                        }
+                        onClick={() => {
+                          if (submitMutation.isSuccess) return;
+                          setSelectedPlatformId(
+                            selectedPlatformId === platform.id
+                              ? null
+                              : platform.id
+                          );
+                          submitMutation.reset();
+                        }}
+                      >
                         {platform.abbreviation ?? platform.name}
                       </Badge>
                     ))}
                   </div>
                 </div>
               </>
+            )}
+
+            {submitMutation.isSuccess && (
+              <div className="bg-muted flex items-center gap-2 rounded-lg p-3">
+                <Check className="h-4 w-4 text-green-500" />
+                <p className="text-sm">
+                  Request submitted! You can track it on the{' '}
+                  <a href="/requests" className="text-primary underline">
+                    My Requests
+                  </a>{' '}
+                  page.
+                </p>
+              </div>
+            )}
+
+            {submitMutation.isError && (
+              <p className="text-destructive text-sm">
+                {submitMutation.error instanceof ApiError
+                  ? submitMutation.error.message
+                  : 'Failed to submit request. Please try again.'}
+              </p>
+            )}
+
+            {selectedPlatformId && !submitMutation.isSuccess && (
+              <Button
+                onClick={handleSubmit}
+                disabled={submitMutation.isPending}
+                className="w-full"
+              >
+                {submitMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  `Request ${game.name} for ${selectedPlatform?.abbreviation ?? selectedPlatform?.name}`
+                )}
+              </Button>
             )}
           </>
         )}

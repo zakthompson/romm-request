@@ -153,10 +153,11 @@ Core feature: users create requests, view their history; admins manage all reque
   - Verify: CRUD operations work, authorization enforced, duplicates rejected
   - Note: Service in `server/src/services/requests.ts` with `createRequest`, `listRequests`, `getRequestById`, `updateRequestStatus` functions. Routes in `server/src/routes/requests.ts`, registered at `{basePath}api/requests`. All routes require auth; PATCH requires admin. Duplicate detection via application-level check (backed by partial unique index). List endpoint joins with users table to include requester info. Non-admin users can only see their own requests.
 
-- [ ] **4.3 Request creation flow (frontend)**
+- [x] **4.3 Request creation flow (frontend)**
   - Full flow: search game → select game → choose platform → confirm & submit
   - Success/error feedback after submission
   - Verify: user can complete the full request flow end-to-end
+  - Note: Updated `GameDetailDialog` to support platform selection (clickable badges) and request submission via `useMutation`. Shows success confirmation with link to My Requests page. Displays API errors (including duplicate detection) inline. State resets when dialog closes. Invalidates `['requests']` query cache on success.
 
 - [ ] **4.4 User request history page**
   - List of current user's requests with status badges (pending/fulfilled/rejected)
