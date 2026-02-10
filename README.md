@@ -54,20 +54,20 @@ All configuration is via environment variables. See `.env.example` for defaults.
 
 ### Optional
 
-| Variable           | Default                  | Description                                                 |
-| ------------------ | ------------------------ | ----------------------------------------------------------- |
-| `PORT`             | `3000`                   | Server port                                                 |
-| `BASE_PATH`        | `/`                      | URL subdirectory (e.g. `/requests/`). **Requires rebuild.** |
-| `APP_URL`          | `http://localhost:3000`  | Public URL (used in emails)                                 |
-| `DATABASE_PATH`    | `./data/romm-request.db` | SQLite database file path                                   |
-| `OIDC_ADMIN_GROUP` | `romm-admin`             | Authentik group name that grants admin access               |
-| `SMTP_HOST`        | _(empty)_                | SMTP server (email disabled when unset)                     |
-| `SMTP_PORT`        | `587`                    | SMTP port                                                   |
-| `SMTP_USER`        | _(empty)_                | SMTP username                                               |
-| `SMTP_PASS`        | _(empty)_                | SMTP password                                               |
-| `SMTP_FROM`        | `noreply@{SMTP_HOST}`    | From address for emails                                     |
-| `ADMIN_EMAIL`      | _(empty)_                | Admin email for new-request notifications                   |
-| `DEV_AUTH`         | `false`                  | Enable dev login (ignored in production)                    |
+| Variable           | Default                  | Description                                   |
+| ------------------ | ------------------------ | --------------------------------------------- |
+| `PORT`             | `3000`                   | Server port                                   |
+| `BASE_PATH`        | `/`                      | URL subdirectory (e.g. `/requests/`)          |
+| `APP_URL`          | `http://localhost:3000`  | Public URL (used in emails)                   |
+| `DATABASE_PATH`    | `./data/romm-request.db` | SQLite database file path                     |
+| `OIDC_ADMIN_GROUP` | `romm-admin`             | Authentik group name that grants admin access |
+| `SMTP_HOST`        | _(empty)_                | SMTP server (email disabled when unset)       |
+| `SMTP_PORT`        | `587`                    | SMTP port                                     |
+| `SMTP_USER`        | _(empty)_                | SMTP username                                 |
+| `SMTP_PASS`        | _(empty)_                | SMTP password                                 |
+| `SMTP_FROM`        | `noreply@{SMTP_HOST}`    | From address for emails                       |
+| `ADMIN_EMAIL`      | _(empty)_                | Admin email for new-request notifications     |
+| `DEV_AUTH`         | `false`                  | Enable dev login (ignored in production)      |
 
 ### Subdirectory Deployment
 
@@ -76,9 +76,7 @@ To deploy at a subdirectory (e.g. `https://example.com/requests/`):
 1. Set `BASE_PATH=/requests/` in your `.env`
 2. Set `APP_URL=https://example.com`
 3. Set `OIDC_REDIRECT_URI=https://example.com/requests/api/auth/callback`
-4. **Rebuild** the Docker image: `docker compose up -d --build`
-
-`BASE_PATH` is baked into the client build, so changing it requires a rebuild.
+4. Recreate the container: `docker compose up -d`
 
 ## Reverse Proxy (SWAG / Nginx)
 

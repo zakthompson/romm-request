@@ -1,9 +1,6 @@
 services:
   romm-request:
-    build:
-      context: .
-      args:
-        - BASE_PATH=${BASE_PATH:-/}
+    build: .
     ports:
       - '${PORT:-3000}:3000'
     environment:
