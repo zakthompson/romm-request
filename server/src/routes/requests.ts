@@ -7,6 +7,10 @@ import {
   updateRequestStatus,
 } from '../services/requests.js';
 import {
+  sendNewRequestNotification,
+  sendRequestStatusNotification,
+} from '../services/email.js';
+import {
   REQUEST_STATUSES,
   type CreateRequestBody,
   type UpdateRequestBody,
@@ -44,6 +48,11 @@ export default async function requestRoutes(app: FastifyInstance) {
         existingRequest: result.request,
       });
     }
+
+    sendNewRequestNotification(
+      result.request,
+      request.user!.displayName || request.user!.email
+    );
 
     return reply.code(201).send(result.request);
   });
@@ -107,11 +116,13 @@ export default async function requestRoutes(app: FastifyInstance) {
         return reply.code(404).send({ error: 'Request not found' });
       }
 
-      if ('error' in result && result.error === 'not_pending') {
+      if ('error' in result) {
         return reply
           .code(409)
           .send({ error: 'Only pending requests can be updated' });
       }
+
+      sendRequestStatusNotification(result);
 
       return result;
     }
