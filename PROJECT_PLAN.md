@@ -159,11 +159,12 @@ Core feature: users create requests, view their history; admins manage all reque
   - Verify: user can complete the full request flow end-to-end
   - Note: Updated `GameDetailDialog` to support platform selection (clickable badges) and request submission via `useMutation`. Shows success confirmation with link to My Requests page. Displays API errors (including duplicate detection) inline. State resets when dialog closes. Invalidates `['requests']` query cache on success.
 
-- [ ] **4.4 User request history page**
+- [x] **4.4 User request history page**
   - List of current user's requests with status badges (pending/fulfilled/rejected)
   - Sorted by most recent, optionally filterable by status
   - Shows game cover, name, platform, date requested
   - Verify: page displays requests accurately, updates after new submission
+  - Note: Implemented in `client/src/routes/_authenticated/requests.tsx`. Uses TanStack Query with 30s stale time. Status filter badges (All/Pending/Fulfilled/Rejected) drive query params. Each request shown as a card with cover art, game name, platform, status badge with icon, date, and admin notes (if any). Empty state encourages searching for games. Skeleton loading state for UX.
 
 - [ ] **4.5 Admin request management**
   - Admin request list page: shows all requests, filterable by status (default: pending)
