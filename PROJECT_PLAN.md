@@ -56,45 +56,51 @@ Set up the monorepo structure, tooling, and a minimal working shell for both cli
 
 Implement OIDC/OAuth2 login with Authentik, session management, and admin role detection.
 
-- [ ] **2.1 Set up SQLite with Drizzle ORM**
+- [x] **2.1 Set up SQLite with Drizzle ORM**
   - Install `drizzle-orm`, `better-sqlite3`, `drizzle-kit`
   - Configure Drizzle with SQLite connection
   - Create `pnpm db:migrate` and `pnpm db:studio` scripts
   - Verify: migrations run and Drizzle Studio connects
+  - Note: Added `better-sqlite3` to `onlyBuiltDependencies` in `pnpm-workspace.yaml`. DB connection in `server/src/db/index.ts` auto-creates the data directory. SQLite configured with WAL mode and foreign keys enabled.
 
-- [ ] **2.2 Create users table**
+- [x] **2.2 Create users table**
   - Schema: `id`, `oidc_sub` (unique), `email`, `display_name`, `is_admin`, `created_at`, `updated_at`
   - Generate and run initial migration
   - Verify: table exists in SQLite after migration
+  - Note: Schema in `server/src/db/schema.ts`. Timestamps stored as TEXT using SQLite `datetime('now')`. Migration in `server/drizzle/0000_lumpy_mystique.sql`.
 
-- [ ] **2.3 Implement OIDC/OAuth2 flow**
+- [x] **2.3 Implement OIDC/OAuth2 flow**
   - Create a Fastify plugin that handles OIDC discovery (`.well-known/openid-configuration`)
   - Implement `/api/auth/login` — redirects to Authentik authorization endpoint
   - Implement `/api/auth/callback` — exchanges code for tokens, extracts user info and group claims
   - On successful auth: upsert user in DB (create or update from OIDC claims), set `is_admin` based on group membership
   - Verify: full login flow works against an Authentik instance (or mock)
+  - Note: Uses `openid-client` v6 with PKCE (S256). OIDC config lazily discovered on first auth request. PKCE code verifier and state stored in session during login redirect. Config module (`server/src/config.ts`) centralizes env var access with lazy getters for OIDC to avoid startup errors when env vars are unset.
 
-- [ ] **2.4 Implement session management**
+- [x] **2.4 Implement session management**
   - Install `@fastify/secure-session` (or `@fastify/session` + compatible store)
   - Store user ID in encrypted session cookie
   - Create `requireAuth` and `requireAdmin` decorators/hooks
   - Implement `/api/auth/me` — returns current user from session (or 401)
   - Implement `/api/auth/logout` — destroys session
   - Verify: session persists across requests, `/api/auth/me` returns user, logout clears session
+  - Note: Uses `@fastify/secure-session` with secret+salt approach. Session cookie is httpOnly, sameSite=lax, 7-day maxAge. Auth hooks in `server/src/plugins/auth.ts` export `requireAuth` and `requireAdmin` functions. Session type augmentation in `server/src/types.d.ts`.
 
-- [ ] **2.5 Frontend auth integration**
+- [x] **2.5 Frontend auth integration**
   - Create `useAuth` hook (wraps TanStack Query call to `/api/auth/me`)
   - Create an auth context/provider that exposes user state and `isAdmin`
   - Implement login page with "Sign in with Authentik" button
   - Redirect unauthenticated users to login
   - Verify: login redirects to Authentik, callback lands back in the app with user state populated
+  - Note: `useAuth` hook in `client/src/lib/auth.ts` uses TanStack Query with `authQueryOptions`. API client in `client/src/lib/api.ts` with typed error handling. Auth protection via `_authenticated` layout route — all authenticated routes are nested under it. Admin routes check `isAdmin` and redirect to `/search` if unauthorized. Placeholder routes created for `/search`, `/requests`, `/admin/requests`, `/admin/config`.
 
-- [ ] **2.6 App shell and navigation**
+- [x] **2.6 App shell and navigation**
   - Create root layout with top nav bar showing user info and logout
   - For admin users: add a sidebar/side menu with links to admin sections (Requests, Configuration)
   - Non-admin users see a simpler layout (no admin menu)
   - Protected route wrappers for authenticated and admin-only routes
   - Verify: admin and non-admin users see different navigation
+  - Note: Implemented as a horizontal nav bar (`NavBar` component) in the `_authenticated` layout rather than sidebar. Admin links (All Requests, Config) only shown when `isAdmin` is true. User dropdown menu shows email, admin badge, and sign-out option. Uses shadcn/ui DropdownMenu and lucide-react icons. Navigation uses TanStack Router `Link` components.
 
 ---
 

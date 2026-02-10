@@ -3,27 +3,34 @@ import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { APP_NAME } from '@romm-request/shared';
+import { config } from './config.js';
+import sessionPlugin from './plugins/session.js';
+import authPlugin from './plugins/auth.js';
+import authRoutes from './routes/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const PORT = parseInt(process.env.PORT || '3000', 10);
-const HOST = process.env.HOST || '0.0.0.0';
-const BASE_PATH = process.env.BASE_PATH || '/';
-const NODE_ENV = process.env.NODE_ENV || 'development';
+const app = Fastify({
+  logger: true,
+  trustProxy: config.isProduction,
+});
 
-const app = Fastify({ logger: true });
+await app.register(sessionPlugin);
+await app.register(authPlugin);
 
-app.get(`${BASE_PATH}api/health`, async () => ({
+app.get(`${config.basePath}api/health`, async () => ({
   status: 'ok',
   name: APP_NAME,
   timestamp: new Date().toISOString(),
 }));
 
-if (NODE_ENV === 'production') {
+await app.register(authRoutes, { prefix: `${config.basePath}api/auth` });
+
+if (config.isProduction) {
   const clientDistPath = path.resolve(__dirname, '../../client/dist');
   await app.register(fastifyStatic, {
     root: clientDistPath,
-    prefix: BASE_PATH,
+    prefix: config.basePath,
     wildcard: false,
   });
 
@@ -34,7 +41,7 @@ if (NODE_ENV === 'production') {
 
 async function start() {
   try {
-    await app.listen({ port: PORT, host: HOST });
+    await app.listen({ port: config.port, host: config.host });
   } catch (err) {
     app.log.error(err);
     process.exit(1);
