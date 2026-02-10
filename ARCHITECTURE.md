@@ -88,6 +88,12 @@ In production, Fastify serves the built React SPA as static files. In developmen
 | GET    | `/api/requests/:id` | User  | Get request details                                                       |
 | PATCH  | `/api/requests/:id` | Admin | Update request status and notes                                           |
 
+### Admin
+
+| Method | Path                | Auth  | Description                         |
+| ------ | ------------------- | ----- | ----------------------------------- |
+| GET    | `/api/admin/config` | Admin | Get safe (non-secret) server config |
+
 ### System
 
 | Method | Path          | Auth | Description  |
@@ -177,5 +183,5 @@ Server                          Twitch                    IGDB
 
 - **AuthService** (`server/src/services/auth.ts`) — OIDC user upsert, getUserById
 - **IGDBService** (`server/src/services/igdb.ts`) — Twitch token management, game search/details queries
+- **RequestService** (`server/src/services/requests.ts`) — Request CRUD, duplicate pending detection, status transitions (pending → fulfilled/rejected), joins users for requester info
 - **EmailService** — SMTP connection, template rendering, send with error handling (planned)
-- **RequestService** — Request CRUD, duplicate detection, status transitions (planned)

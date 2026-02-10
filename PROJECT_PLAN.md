@@ -172,10 +172,11 @@ Core feature: users create requests, view their history; admins manage all reque
   - Verify: admin can view all requests and change status; changes reflected immediately
   - Note: Implemented in `client/src/routes/_authenticated/admin/requests.tsx`. Default filter is "Pending". Clickable request cards open a detail dialog showing requester info, with Fulfill/Reject buttons and optional admin notes textarea. Added `Textarea` shadcn/ui component (`client/src/components/ui/textarea.tsx`). Status updates via PATCH mutation that invalidates all request caches. Dialog auto-closes on success.
 
-- [ ] **4.6 Admin configuration page**
+- [x] **4.6 Admin configuration page**
   - Accessible from admin sidebar
   - For now, minimal: display current configuration (read from env), placeholder for future settings
   - Verify: page renders, is admin-only
+  - Note: Backend endpoint `GET /api/admin/config` (in `server/src/routes/admin.ts`) exposes safe config values (no secrets). Frontend page in `client/src/routes/_authenticated/admin/config.tsx` displays configuration in categorized cards: Application, Database, Authentication, IGDB, Email. Shows configured/not-configured status badges for optional integrations.
 
 ---
 
