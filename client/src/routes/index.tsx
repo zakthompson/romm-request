@@ -35,9 +35,11 @@ function HomePage() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl">{APP_NAME}</CardTitle>
+          <CardTitle className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-3xl text-transparent">
+            {APP_NAME}
+          </CardTitle>
           <CardDescription>
-            Request games for your RomM collection
+            Request specific games be added to RomM!
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">

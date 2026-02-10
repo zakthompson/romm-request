@@ -30,7 +30,7 @@ function RequestsPage() {
   const requests = requestsQuery.data ?? [];
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
+    <div className="mx-auto max-w-5xl px-6 py-6 lg:px-8">
       <h1 className="text-2xl font-bold">My Requests</h1>
       <p className="text-muted-foreground mt-1 mb-4">
         Track the status of your game requests.
