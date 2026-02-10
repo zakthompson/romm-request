@@ -228,7 +228,7 @@ Multi-stage Dockerfile with four stages: `base`, `deps`, `prod-deps`, `build`, `
 - **base**: `node:22-slim` with pnpm enabled via corepack
 - **deps**: Installs all dependencies (dev + prod) for building
 - **prod-deps**: Installs production-only dependencies (no devDeps)
-- **build**: Builds all packages; accepts `BASE_PATH` build arg for Vite
+- **build**: Builds all packages with `VITE_BASE_PLACEHOLDER=true`; Vite uses `/__ROMM_BASE_PATH__/` as `base`, which the entrypoint replaces at runtime
 - **production**: Copies only production deps, built server, built client, and migration files. Runs as non-root `node` user.
 
 Database migrations run automatically on server startup via `drizzle-orm/better-sqlite3/migrator`.
@@ -240,9 +240,14 @@ The app supports deployment at a URL subdirectory (e.g. `https://example.com/req
 **How it works:**
 
 1. `BASE_PATH` env var (e.g. `/requests/`) is normalized to always start and end with `/`
-2. At **build time**: Vite reads `BASE_PATH` and sets it as the `base` config, so all asset URLs in the built HTML are prefixed correctly
-3. At **runtime**: Fastify prefixes all API routes and static file serving with `basePath`
-4. The client uses `import.meta.env.BASE_URL` (set by Vite from `base`) to prefix API calls and configure TanStack Router's `basepath`
+2. At **Docker build time**: Vite uses `/__ROMM_BASE_PATH__/` as a placeholder `base` value
+3. At **container startup**: The entrypoint script replaces the placeholder in all built client files (`.html`, `.js`) with the actual `BASE_PATH` from the environment
+4. At **runtime**: Fastify prefixes all API routes and static file serving with `basePath`
+5. The client uses `import.meta.env.BASE_URL` (inlined by Vite as the placeholder string, then replaced by the entrypoint) to prefix API calls and configure TanStack Router's `basepath`
+
+This means `BASE_PATH` is a **runtime** configuration in Docker — changing it only requires recreating the container, not rebuilding the image.
+
+For local development (`pnpm dev` / `pnpm build`), Vite reads `BASE_PATH` directly from the environment as before.
 
 **Configuration for subdirectory deployment:**
 
@@ -251,8 +256,6 @@ BASE_PATH=/requests/
 APP_URL=https://yourdomain.com
 OIDC_REDIRECT_URI=https://yourdomain.com/requests/api/auth/callback
 ```
-
-**Important:** `BASE_PATH` is a build-time value for the client (baked into the Vite build). If you change `BASE_PATH`, you must rebuild the Docker image.
 
 ### SWAG / Nginx Reverse Proxy
 
