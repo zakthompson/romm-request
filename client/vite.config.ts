@@ -4,7 +4,9 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 
-const basePath = process.env.BASE_PATH || '/';
+const basePath = process.env.VITE_BASE_PLACEHOLDER
+  ? '/__ROMM_BASE_PATH__/'
+  : process.env.BASE_PATH || '/';
 
 export default defineConfig({
   base: basePath,

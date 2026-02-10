@@ -5,7 +5,7 @@
 #
 # Prerequisites:
 #   1. Set BASE_PATH=/requests/ in your .env file
-#   2. Rebuild the Docker image: docker compose up -d --build
+#   2. Recreate the container: docker compose up -d
 #   3. Set APP_URL=https://yourdomain.com in your .env file
 #   4. Set OIDC_REDIRECT_URI=https://yourdomain.com/requests/api/auth/callback
 
