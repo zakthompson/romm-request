@@ -2,7 +2,7 @@
   "name": "romm-request",
   "private": true,
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
     "build": "pnpm --filter shared build && pnpm --filter client build && pnpm --filter server build",
@@ -15,7 +15,7 @@
     "check": "pnpm lint && pnpm format:check && pnpm typecheck",
     "db:migrate": "pnpm --filter server db:migrate",
     "db:studio": "pnpm --filter server db:studio",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
