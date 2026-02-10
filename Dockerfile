@@ -40,10 +40,12 @@ COPY --from=build /app/client/dist ./client/dist
 COPY package.json ./
 COPY server/package.json ./server/
 
-RUN mkdir -p /app/data && chown -R node:node /app/data
+RUN apt-get update && apt-get install -y --no-install-recommends gosu && rm -rf /var/lib/apt/lists/*
 
-USER node
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 3000
 
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server/dist/index.js"]
