@@ -110,9 +110,9 @@ The feature is **gracefully disabled** when `ROMM_DB_HOST` is not set — the AP
 
 ### Step 2: Backend — RomM Database Connection & Service
 
-- [ ] Create `server/src/db/romm.ts` (lazy MariaDB connection pool)
-- [ ] Create `server/src/services/romm.ts` (collection query service)
-- [ ] Verify: `pnpm typecheck` passes
+- [x] Create `server/src/db/romm.ts` (lazy MariaDB connection pool)
+- [x] Create `server/src/services/romm.ts` (collection query service)
+- [x] Verify: `pnpm typecheck` passes
 
 **Files to create:**
 
