@@ -77,8 +77,14 @@ export function GameDetailDialog({
   });
 
   const game = detailQuery.data;
+
+  // Clear selection if the platform turns out to be in the collection (race condition)
+  const effectiveSelectedId =
+    selectedPlatformId && collectedPlatformIds.has(selectedPlatformId)
+      ? null
+      : selectedPlatformId;
   const selectedPlatform = game?.platforms.find(
-    (p) => p.id === selectedPlatformId
+    (p) => p.id === effectiveSelectedId
   );
 
   function handleOpenChange(nextOpen: boolean) {
@@ -160,7 +166,11 @@ export function GameDetailDialog({
                   <p className="mb-2 text-sm font-medium">
                     {submitMutation.isSuccess
                       ? 'Requested Platform'
-                      : 'Select a Platform to Request'}
+                      : game.platforms.every((p) =>
+                            collectedPlatformIds.has(p.id)
+                          )
+                        ? 'All Platforms in Collection'
+                        : 'Select a Platform to Request'}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {game.platforms.map((platform) => {
@@ -185,7 +195,7 @@ export function GameDetailDialog({
                         <Badge
                           key={platform.id}
                           variant={
-                            selectedPlatformId === platform.id
+                            effectiveSelectedId === platform.id
                               ? 'default'
                               : 'secondary'
                           }
@@ -197,7 +207,7 @@ export function GameDetailDialog({
                           onClick={() => {
                             if (submitMutation.isSuccess) return;
                             setSelectedPlatformId(
-                              selectedPlatformId === platform.id
+                              effectiveSelectedId === platform.id
                                 ? null
                                 : platform.id
                             );
@@ -234,7 +244,7 @@ export function GameDetailDialog({
               </p>
             )}
 
-            {selectedPlatformId && !submitMutation.isSuccess && (
+            {effectiveSelectedId && !submitMutation.isSuccess && (
               <Button
                 onClick={handleSubmit}
                 disabled={submitMutation.isPending}
