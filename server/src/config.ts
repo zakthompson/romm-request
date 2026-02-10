@@ -82,4 +82,17 @@ export const config = {
       adminEmail: process.env.ADMIN_EMAIL || '',
     };
   },
+
+  get romm() {
+    const host = process.env.ROMM_DB_HOST;
+    if (!host) return null;
+
+    return {
+      host,
+      port: parseInt(process.env.ROMM_DB_PORT || '3306', 10),
+      database: process.env.ROMM_DB_NAME || 'romm',
+      user: required('ROMM_DB_USER'),
+      password: required('ROMM_DB_PASSWD'),
+    };
+  },
 } as const;
