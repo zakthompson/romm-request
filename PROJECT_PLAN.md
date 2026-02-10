@@ -184,23 +184,26 @@ Core feature: users create requests, view their history; admins manage all reque
 
 Notify admin of new requests and requesters when their request status changes.
 
-- [ ] **5.1 SMTP email service**
+- [x] **5.1 SMTP email service**
   - Install Nodemailer, create email service with SMTP configuration from env vars
   - Create email sending utility with error handling (log failures, don't crash the app)
   - Verify: test email sends successfully via configured SMTP server
+  - Note: Service in `server/src/services/email.ts`. Uses Nodemailer with lazy transporter initialization — disabled when `SMTP_HOST` is not set. Email config added as lazy getter in `server/src/config.ts` (returns `null` when SMTP_HOST is missing). Auth credentials only included when SMTP_USER is provided (supports unauthenticated SMTP relays). Secure mode auto-enabled on port 465.
 
-- [ ] **5.2 Email templates**
+- [x] **5.2 Email templates**
   - New request notification (to admin): includes game name, platform, requester name, link to admin view
   - Request fulfilled notification (to requester): includes game name, platform, any admin notes
   - Request rejected notification (to requester): includes game name, platform, admin notes/reason
   - Use simple HTML templates (inline styles for email client compatibility)
   - Verify: emails render correctly in an email client
+  - Note: Templates are inline HTML functions in `server/src/services/email.ts` using a shared `baseLayout()` wrapper with dark header, content area, and footer. Status badges use color-coded labels. Links to admin requests view and user requests view respect `BASE_PATH` and `APP_URL` config.
 
-- [ ] **5.3 Integrate email triggers**
+- [x] **5.3 Integrate email triggers**
   - Send admin notification email when a new request is created (Step 4.2 POST handler)
   - Send requester notification email when request status changes to fulfilled or rejected (Step 4.2 PATCH handler)
   - Email sending should be async/non-blocking — don't delay the API response
   - Verify: emails fire at correct times, contain correct data, app doesn't break if SMTP is down
+  - Note: Email triggers added to `server/src/routes/requests.ts`. `sendNewRequestNotification` called after successful POST (sends to `ADMIN_EMAIL`). `sendRequestStatusNotification` called after successful PATCH (sends to requester email from request DTO). Both are fire-and-forget (no await) — failures are logged but don't affect API responses. Gracefully no-ops when email is not configured.
 
 ---
 

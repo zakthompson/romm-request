@@ -184,4 +184,4 @@ Server                          Twitch                    IGDB
 - **AuthService** (`server/src/services/auth.ts`) — OIDC user upsert, getUserById
 - **IGDBService** (`server/src/services/igdb.ts`) — Twitch token management, game search/details queries
 - **RequestService** (`server/src/services/requests.ts`) — Request CRUD, duplicate pending detection, status transitions (pending → fulfilled/rejected), joins users for requester info
-- **EmailService** — SMTP connection, template rendering, send with error handling (planned)
+- **EmailService** (`server/src/services/email.ts`) — Nodemailer SMTP transport (lazy init, disabled when `SMTP_HOST` unset), HTML templates (new request → admin, status change → requester), fire-and-forget sending

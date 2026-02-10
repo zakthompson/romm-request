@@ -54,6 +54,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   │   │   └── admin.ts   # Admin routes (config endpoint)
 │   │   ├── services/
 │   │   │   ├── auth.ts    # User upsert, getUserById
+│   │   │   ├── email.ts   # SMTP email service (Nodemailer, HTML templates, send helpers)
 │   │   │   ├── igdb.ts    # IGDB API client (Twitch auth, search, details)
 │   │   │   └── requests.ts # Request CRUD operations (create, list, get, update)
 │   │   ├── db/
@@ -114,6 +115,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **IGDB integration** — `server/src/services/igdb.ts` handles Twitch OAuth2 client credentials flow for API access. Token is cached in memory and refreshed 60 seconds before expiry. Uses Apicalypse query syntax (plain text POST body) to `https://api.igdb.com/v4/games`. Search filters to main games only (`category = 0`, no `version_parent`). Cover images use `https://images.igdb.com/igdb/image/upload/t_{size}/{image_id}.jpg`. IGDB config uses lazy getter pattern to avoid startup failures. Rate limit: 4 req/sec (frontend caching via TanStack Query stale times mitigates this).
 - **Request system** — Service in `server/src/services/requests.ts` with pure functions (`createRequest`, `listRequests`, `getRequestById`, `updateRequestStatus`). Routes in `server/src/routes/requests.ts` at `{basePath}api/requests`. Duplicate pending request prevention via application-level check backed by partial unique index in DB. List endpoint joins `users` table to include requester info. Non-admin users restricted to their own requests. Status transitions: only `pending` → `fulfilled`/`rejected` allowed. Frontend uses `useMutation` for create/update with query cache invalidation.
 - **Admin config** — `GET /api/admin/config` in `server/src/routes/admin.ts` exposes safe (non-secret) config values. Frontend displays in categorized cards with configured/not-configured status badges.
+- **Email notifications** — `server/src/services/email.ts` uses Nodemailer with lazy transporter initialization. Gracefully disabled when `SMTP_HOST` is not set (returns `null` config). Supports authenticated and unauthenticated SMTP, auto-enables TLS on port 465. HTML email templates use inline styles for email client compatibility. Two notification types: admin notification on new request creation, user notification on request status change (fulfilled/rejected). Both are fire-and-forget (non-blocking) — failures are logged but don't affect API responses.
 
 ## Environment Variables
 
