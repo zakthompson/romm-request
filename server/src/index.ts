@@ -10,6 +10,8 @@ import authRoutes from './routes/auth.js';
 import gameRoutes from './routes/games.js';
 import requestRoutes from './routes/requests.js';
 import adminRoutes from './routes/admin.js';
+import collectionRoutes from './routes/collection.js';
+import { closeRommPool } from './db/romm.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +36,13 @@ await app.register(requestRoutes, {
   prefix: `${config.basePath}api/requests`,
 });
 await app.register(adminRoutes, { prefix: `${config.basePath}api/admin` });
+await app.register(collectionRoutes, {
+  prefix: `${config.basePath}api/collection`,
+});
+
+app.addHook('onClose', async () => {
+  await closeRommPool();
+});
 
 if (config.isProduction) {
   const clientDistPath = path.resolve(__dirname, '../../client/dist');

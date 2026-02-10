@@ -139,11 +139,11 @@ The feature is **gracefully disabled** when `ROMM_DB_HOST` is not set — the AP
 
 ### Step 3: Backend — API Route & Server Wiring
 
-- [ ] Create `server/src/routes/collection.ts` (collection check endpoint)
-- [ ] Register collection route in `server/src/index.ts`
-- [ ] Add RomM pool shutdown hook in `server/src/index.ts`
-- [ ] Add RomM config status to `server/src/routes/admin.ts`
-- [ ] Verify: `pnpm typecheck` passes
+- [x] Create `server/src/routes/collection.ts` (collection check endpoint)
+- [x] Register collection route in `server/src/index.ts`
+- [x] Add RomM pool shutdown hook in `server/src/index.ts`
+- [x] Add RomM config status to `server/src/routes/admin.ts`
+- [x] Verify: `pnpm typecheck` passes
 
 **Files to modify:**
 
