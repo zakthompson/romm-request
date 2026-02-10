@@ -46,7 +46,7 @@ export function GameDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         {detailQuery.isLoading && <DetailSkeleton />}
 
         {detailQuery.isError && (
@@ -70,15 +70,15 @@ export function GameDetailDialog({
             </DialogHeader>
 
             <div className="flex gap-4">
-              <div className="bg-muted aspect-[264/374] w-28 shrink-0 overflow-hidden rounded-lg">
+              <div className="w-32 shrink-0">
                 {game.coverUrl ? (
                   <img
                     src={game.coverUrl}
                     alt={game.name}
-                    className="h-full w-full object-cover"
+                    className="bg-muted aspect-[3/4] w-full rounded-lg object-cover"
                   />
                 ) : (
-                  <div className="flex h-full items-center justify-center">
+                  <div className="bg-muted flex aspect-[3/4] w-full items-center justify-center rounded-lg">
                     <Gamepad2 className="text-muted-foreground h-8 w-8" />
                   </div>
                 )}
