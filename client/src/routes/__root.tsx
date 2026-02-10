@@ -14,7 +14,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   return (
     <ErrorBoundary>
-      <div className="bg-background text-foreground min-h-screen">
+      <div className="dark bg-background text-foreground min-h-screen">
         <Outlet />
         {import.meta.env.DEV && <DevAuthWidget />}
       </div>

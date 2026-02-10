@@ -2,7 +2,7 @@ import { config } from '../config.js';
 
 const TWITCH_TOKEN_URL = 'https://id.twitch.tv/oauth2/token';
 const IGDB_BASE_URL = 'https://api.igdb.com/v4';
-const MAX_SEARCH_RESULTS = 20;
+const MAX_SEARCH_RESULTS = 50;
 const GAME_DETAIL_FIELDS = [
   'name',
   'summary',

@@ -40,7 +40,7 @@ function SearchPage() {
   const showResults = debouncedQuery.length >= 2;
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="px-6 py-6 lg:px-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Search Games</h1>
         <p className="text-muted-foreground mt-1">
@@ -73,7 +73,7 @@ function SearchPage() {
       )}
 
       {showResults && results.length > 0 && (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 items-start gap-5 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
           {results.map((game) => (
             <GameResultCard
               key={game.id}
@@ -97,7 +97,7 @@ function SearchPage() {
 
 function SearchSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+    <div className="grid grid-cols-2 items-start gap-5 sm:grid-cols-[repeat(auto-fill,minmax(180px,1fr))]">
       {Array.from({ length: 10 }).map((_, i) => (
         <div key={i} className="space-y-2">
           <Skeleton className="aspect-[264/374] w-full rounded-lg" />

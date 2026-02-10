@@ -17,10 +17,13 @@ export function NavBar() {
   if (!user) return null;
 
   return (
-    <header className="bg-card border-b">
+    <header className="bg-card/80 border-border/50 border-b backdrop-blur-md">
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-6">
-          <Link to="/search" className="text-lg font-semibold">
+          <Link
+            to="/search"
+            className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-lg font-bold text-transparent"
+          >
             {APP_NAME}
           </Link>
           <nav className="flex items-center gap-1">
