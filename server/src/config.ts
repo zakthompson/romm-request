@@ -1,3 +1,14 @@
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Load .env from project root — optional, env vars can be set directly
+try {
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+  process.loadEnvFile(resolve(root, '.env'));
+} catch {
+  // .env not found or unreadable — ignored
+}
+
 function required(key: string, fallback?: string): string {
   const value = process.env[key] ?? fallback;
   if (value === undefined) {
