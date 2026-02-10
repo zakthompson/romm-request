@@ -39,7 +39,7 @@ function HomePage() {
             {APP_NAME}
           </CardTitle>
           <CardDescription>
-            Request games for your RomM collection
+            Request specific games be added to RomM!
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">

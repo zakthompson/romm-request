@@ -43,9 +43,7 @@ function SearchPage() {
     <div className="px-6 py-6 lg:px-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Search Games</h1>
-        <p className="text-muted-foreground mt-1">
-          Find a game to request for your RomM collection.
-        </p>
+        <p className="text-muted-foreground mt-1">Find a game to request.</p>
       </div>
 
       <div className="relative mb-6">
