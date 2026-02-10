@@ -18,7 +18,7 @@ const basePath = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 
 const router = createRouter({
   routeTree,
-  basepath: basePath === '' ? '/' : basePath,
+  basepath: basePath,
   context: { queryClient },
 });
 
