@@ -51,6 +51,20 @@ export function GameDetailDialog({
     staleTime: 10 * 60 * 1000,
   });
 
+  const collectionQuery = useQuery({
+    queryKey: ['collection', 'check', gameId],
+    queryFn: () =>
+      apiFetch<{ platformIgdbIds: number[] }>(
+        `/api/collection/check?igdbGameId=${gameId}`
+      ),
+    enabled: gameId !== null,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const collectedPlatformIds = new Set(
+    collectionQuery.data?.platformIgdbIds ?? []
+  );
+
   const submitMutation = useMutation({
     mutationFn: (body: CreateRequestBody) =>
       apiFetch<RequestDto>('/api/requests', {
@@ -63,8 +77,14 @@ export function GameDetailDialog({
   });
 
   const game = detailQuery.data;
+
+  // Clear selection if the platform turns out to be in the collection (race condition)
+  const effectiveSelectedId =
+    selectedPlatformId && collectedPlatformIds.has(selectedPlatformId)
+      ? null
+      : selectedPlatformId;
   const selectedPlatform = game?.platforms.find(
-    (p) => p.id === selectedPlatformId
+    (p) => p.id === effectiveSelectedId
   );
 
   function handleOpenChange(nextOpen: boolean) {
@@ -146,35 +166,58 @@ export function GameDetailDialog({
                   <p className="mb-2 text-sm font-medium">
                     {submitMutation.isSuccess
                       ? 'Requested Platform'
-                      : 'Select a Platform to Request'}
+                      : game.platforms.every((p) =>
+                            collectedPlatformIds.has(p.id)
+                          )
+                        ? 'All Platforms in Collection'
+                        : 'Select a Platform to Request'}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {game.platforms.map((platform) => (
-                      <Badge
-                        key={platform.id}
-                        variant={
-                          selectedPlatformId === platform.id
-                            ? 'default'
-                            : 'secondary'
-                        }
-                        className={
-                          submitMutation.isSuccess
-                            ? ''
-                            : 'cursor-pointer transition-colors'
-                        }
-                        onClick={() => {
-                          if (submitMutation.isSuccess) return;
-                          setSelectedPlatformId(
-                            selectedPlatformId === platform.id
-                              ? null
-                              : platform.id
-                          );
-                          submitMutation.reset();
-                        }}
-                      >
-                        {platform.abbreviation ?? platform.name}
-                      </Badge>
-                    ))}
+                    {game.platforms.map((platform) => {
+                      const inCollection = collectedPlatformIds.has(
+                        platform.id
+                      );
+
+                      if (inCollection) {
+                        return (
+                          <Badge
+                            key={platform.id}
+                            variant="outline"
+                            className="border-green-500/50 bg-green-500/10 text-green-600 dark:text-green-400"
+                          >
+                            <Check className="mr-1 h-3 w-3" />
+                            {platform.abbreviation ?? platform.name}
+                          </Badge>
+                        );
+                      }
+
+                      return (
+                        <Badge
+                          key={platform.id}
+                          variant={
+                            effectiveSelectedId === platform.id
+                              ? 'default'
+                              : 'secondary'
+                          }
+                          className={
+                            submitMutation.isSuccess
+                              ? ''
+                              : 'cursor-pointer transition-colors'
+                          }
+                          onClick={() => {
+                            if (submitMutation.isSuccess) return;
+                            setSelectedPlatformId(
+                              effectiveSelectedId === platform.id
+                                ? null
+                                : platform.id
+                            );
+                            submitMutation.reset();
+                          }}
+                        >
+                          {platform.abbreviation ?? platform.name}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
               </>
@@ -201,7 +244,7 @@ export function GameDetailDialog({
               </p>
             )}
 
-            {selectedPlatformId && !submitMutation.isSuccess && (
+            {effectiveSelectedId && !submitMutation.isSuccess && (
               <Button
                 onClick={handleSubmit}
                 disabled={submitMutation.isPending}

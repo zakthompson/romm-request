@@ -27,6 +27,11 @@ services:
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ROMM_DB_HOST=${ROMM_DB_HOST}
+      - ROMM_DB_PORT=${ROMM_DB_PORT:-3306}
+      - ROMM_DB_NAME=${ROMM_DB_NAME:-romm}
+      - ROMM_DB_USER=${ROMM_DB_USER}
+      - ROMM_DB_PASSWD=${ROMM_DB_PASSWD}
     volumes:
       - romm-request-data:/app/data
     restart: unless-stopped

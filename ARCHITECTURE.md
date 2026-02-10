@@ -23,6 +23,11 @@ Reference document for the technical architecture. Update this as the implementa
                                     │  │ IGDB    ││───►│  Twitch/  │
                                     │  │ Service ││    │  IGDB API │
                                     │  └────────┘│    └──────────┘
+                                    │            │
+                                    │  ┌────────┐│    ┌──────────┐
+                                    │  │ mysql2  ││───►│  RomM     │
+                                    │  │ (r/o)   ││    │  MariaDB  │
+                                    │  └────────┘│    └──────────┘
                                     └────────────┘
 ```
 
@@ -87,6 +92,12 @@ In production, Fastify serves the built React SPA as static files. In developmen
 | GET    | `/api/requests`     | User  | List requests (own for users, all for admins). Supports `?status=` filter |
 | GET    | `/api/requests/:id` | User  | Get request details                                                       |
 | PATCH  | `/api/requests/:id` | Admin | Update request status and notes                                           |
+
+### Collection (RomM)
+
+| Method | Path                               | Auth | Description                                            |
+| ------ | ---------------------------------- | ---- | ------------------------------------------------------ |
+| GET    | `/api/collection/check?igdbGameId` | User | Check which platforms have ROMs in the RomM collection |
 
 ### Admin
 
@@ -185,6 +196,28 @@ Server                          Twitch                    IGDB
 - **IGDBService** (`server/src/services/igdb.ts`) — Twitch token management, game search/details queries
 - **RequestService** (`server/src/services/requests.ts`) — Request CRUD, duplicate pending detection, status transitions (pending → fulfilled/rejected), joins users for requester info
 - **EmailService** (`server/src/services/email.ts`) — Nodemailer SMTP transport (lazy init, disabled when `SMTP_HOST` unset), HTML templates (new request → admin, status change → requester), fire-and-forget sending
+- **RomMService** (`server/src/services/romm.ts`) — Read-only query against external RomM MariaDB. Returns IGDB platform IDs that have ROMs for a given IGDB game ID. Disabled when `ROMM_DB_HOST` is unset.
+
+## RomM Collection Integration
+
+Optional read-only integration with an external RomM MariaDB database. When configured, the app can check whether a game already exists in the RomM collection.
+
+```
+Server                          RomM MariaDB
+  │                               │
+  │  SELECT DISTINCT p.igdb_id    │
+  │  FROM roms r                  │
+  │  JOIN platforms p ...         │
+  │  WHERE r.igdb_id = ?          │
+  │──────────────────────────────►│
+  │◄──────────────────────────────│
+  │  [igdb_platform_ids]          │
+```
+
+- **Connection**: `mysql2/promise` pool, lazily initialized on first request, closed on server shutdown
+- **Query**: Single read-only SELECT joining `roms` and `platforms` tables to find platforms with ROMs for a given IGDB game ID
+- **Graceful degradation**: When `ROMM_DB_HOST` is unset, the feature is completely disabled — API returns empty results, frontend behaves as before
+- **Frontend**: Game detail dialog fetches collection data in parallel with game details. Platforms in the collection show a green checkmark badge and cannot be selected for requests.
 
 ## Deployment
 

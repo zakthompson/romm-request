@@ -15,6 +15,7 @@ dist/
 *.db-journal
 *.db-wal
 *.db-shm
+db.sql
 data/
 
 # IDE

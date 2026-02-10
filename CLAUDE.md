@@ -53,15 +53,18 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   │   │   ├── auth.ts    # Auth routes (login, callback, me, logout)
 │   │   │   ├── games.ts   # Game search & detail routes (IGDB proxy)
 │   │   │   ├── requests.ts # Request CRUD routes (create, list, get, update status)
+│   │   │   ├── collection.ts # Collection check route (RomM DB lookup)
 │   │   │   └── admin.ts   # Admin routes (config endpoint)
 │   │   ├── services/
 │   │   │   ├── auth.ts    # User upsert, getUserById
 │   │   │   ├── email.ts   # SMTP email service (Nodemailer, HTML templates, send helpers)
 │   │   │   ├── igdb.ts    # IGDB API client (Twitch auth, search, details)
-│   │   │   └── requests.ts # Request CRUD operations (create, list, get, update)
+│   │   │   ├── requests.ts # Request CRUD operations (create, list, get, update)
+│   │   │   └── romm.ts   # RomM collection query (getCollectionPlatforms)
 │   │   ├── db/
 │   │   │   ├── index.ts   # Database connection + auto-migration (better-sqlite3 + Drizzle)
-│   │   │   └── schema.ts  # Drizzle table definitions (users, requests)
+│   │   │   ├── schema.ts  # Drizzle table definitions (users, requests)
+│   │   │   └── romm.ts   # RomM MariaDB connection pool (lazy, read-only)
 │   │   ├── plugins/
 │   │   │   ├── auth.ts    # requireAuth, requireAdmin hooks
 │   │   │   └── session.ts # @fastify/secure-session setup
@@ -124,6 +127,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **BASE_PATH / subdirectory** — `normalizeBasePath()` in `server/src/config.ts` ensures basePath always starts and ends with `/`. Vite reads `BASE_PATH` env var at build time for `base` config. Client uses `import.meta.env.BASE_URL` via `apiPath()` helper (`client/src/lib/api.ts`) to prefix all API calls. TanStack Router configured with `basepath` in `client/src/main.tsx`. `BASE_PATH` is a **build-time** value for the client — changing it requires a rebuild. Dockerfile accepts `BASE_PATH` as a build arg.
 - **Error boundary** — `ErrorBoundary` class component (`client/src/components/error-boundary.tsx`) wraps the entire app at the root layout. Catches unhandled rendering errors and shows a reload prompt.
 - **Docker** — Multi-stage Dockerfile with `prod-deps` stage for production-only dependencies. Migration files included in production image. Auto-migration on startup eliminates the need for a separate `db:migrate` step.
+- **RomM collection integration** — Optional read-only connection to an external RomM MariaDB database via `mysql2`. Lazy connection pool in `server/src/db/romm.ts`, query service in `server/src/services/romm.ts`, API route at `GET {basePath}api/collection/check?igdbGameId=X`. Gracefully disabled when `ROMM_DB_HOST` is unset (returns empty array). Frontend fetches collection data in parallel with game details in `GameDetailDialog` — platforms in the collection show a green checkmark badge and are non-selectable. No ORM used for RomM DB (raw SQL via `mysql2`).
 
 ## Environment Variables
 
@@ -148,6 +152,11 @@ A self-hosted web application for requesting games to be added to a RomM collect
 | `ADMIN_EMAIL`        | Admin email for new-request notifications                                   |
 | `BASE_PATH`          | Base URL path for subdirectory deployment (default: `/`)                    |
 | `APP_URL`            | Full public URL of the app (used in emails and redirects)                   |
+| `ROMM_DB_HOST`       | MariaDB hostname for RomM database (collection check disabled when unset)   |
+| `ROMM_DB_PORT`       | MariaDB port (default: `3306`)                                              |
+| `ROMM_DB_NAME`       | RomM database name (default: `romm`)                                        |
+| `ROMM_DB_USER`       | RomM database user (read-only recommended)                                  |
+| `ROMM_DB_PASSWD`     | RomM database password                                                      |
 | `PORT`               | Server port (default: `3000`)                                               |
 
 ## Development Commands

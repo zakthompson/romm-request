@@ -34,5 +34,10 @@ export default async function adminRoutes(app: FastifyInstance) {
       fromAddress: process.env.SMTP_FROM || null,
       adminEmail: process.env.ADMIN_EMAIL || null,
     },
+    romm: {
+      configured: isConfigured('ROMM_DB_HOST'),
+      host: process.env.ROMM_DB_HOST || null,
+      database: process.env.ROMM_DB_NAME || 'romm',
+    },
   }));
 }
