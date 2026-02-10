@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useAuth } from '@/lib/auth';
+import { apiPath } from '@/lib/api';
 
 export const Route = createFileRoute('/')({
   component: HomePage,
@@ -40,7 +41,7 @@ function HomePage() {
         </CardHeader>
         <CardContent className="flex justify-center">
           <Button asChild>
-            <a href="/api/auth/login">Sign In</a>
+            <a href={apiPath('/api/auth/login')}>Sign In</a>
           </Button>
         </CardContent>
       </Card>

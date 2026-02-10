@@ -1,6 +1,9 @@
 services:
   romm-request:
-    build: .
+    build:
+      context: .
+      args:
+        - BASE_PATH=${BASE_PATH:-/}
     ports:
       - '${PORT:-3000}:3000'
     environment:
@@ -33,7 +36,7 @@ services:
           'CMD',
           'node',
           '-e',
-          "fetch('http://localhost:3000/api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))",
+          "let p = process.env.BASE_PATH || '/'; if (!p.endsWith('/')) p += '/'; fetch('http://localhost:3000' + p + 'api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))",
         ]
       interval: 30s
       timeout: 5s

@@ -17,13 +17,20 @@ function required(key: string, fallback?: string): string {
   return value;
 }
 
+function normalizeBasePath(raw: string): string {
+  let p = raw.trim();
+  if (!p.startsWith('/')) p = '/' + p;
+  if (!p.endsWith('/')) p = p + '/';
+  return p;
+}
+
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isProduction = nodeEnv === 'production';
 
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   host: process.env.HOST || '0.0.0.0',
-  basePath: process.env.BASE_PATH || '/',
+  basePath: normalizeBasePath(process.env.BASE_PATH || '/'),
   appUrl: process.env.APP_URL || 'http://localhost:3000',
   nodeEnv,
   isProduction,

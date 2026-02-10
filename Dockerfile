@@ -15,6 +15,8 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 # Build
 FROM deps AS build
+ARG BASE_PATH=/
+ENV BASE_PATH=${BASE_PATH}
 COPY . .
 RUN pnpm build
 

@@ -1,6 +1,6 @@
 import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { apiFetch } from './api';
+import { apiFetch, apiPath } from './api';
 
 export interface User {
   id: number;
@@ -21,9 +21,9 @@ export function useAuth() {
   const queryClient = useQueryClient();
 
   const logout = useCallback(async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch(apiPath('/api/auth/logout'), { method: 'POST' });
     queryClient.setQueryData(['auth', 'me'], null);
-    window.location.href = '/';
+    window.location.href = import.meta.env.BASE_URL;
   }, [queryClient]);
 
   return {

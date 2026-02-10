@@ -211,12 +211,13 @@ Notify admin of new requests and requesters when their request status changes.
 
 Finalize for self-hosted production deployment behind SWAG.
 
-- [ ] **6.1 Subdirectory (BASE_PATH) support**
+- [x] **6.1 Subdirectory (BASE_PATH) support**
   - Vite config: set `base` to `BASE_PATH` at build time
   - Fastify: prefix all API routes and static serving with `BASE_PATH`
   - TanStack Router: configure `basepath` option
   - Auth callback URLs respect `BASE_PATH`
   - Verify: app works correctly at both `/` and a subdirectory like `/requests/`
+  - Note: `normalizeBasePath()` in `server/src/config.ts` ensures basePath always starts and ends with `/`. Vite reads `BASE_PATH` env var at build time for `base` config option. Exported `apiPath()` helper in `client/src/lib/api.ts` prepends `import.meta.env.BASE_URL` to all API fetch paths. TanStack Router configured with `basepath` in `client/src/main.tsx`. Login href, logout redirect, and dev auth widget all use base-path-aware URLs. Dockerfile passes `BASE_PATH` as build arg. Docker Compose health check dynamically constructs the health URL from `BASE_PATH` env var. `.env.example` documents that `OIDC_REDIRECT_URI` must include `BASE_PATH`.
 
 - [ ] **6.2 Finalize Docker configuration**
   - Optimize Dockerfile (layer caching, minimal production image, non-root user)

@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
 
+const basePath = process.env.BASE_PATH || '/';
+
 export default defineConfig({
+  base: basePath,
   plugins: [
     tailwindcss(),
     TanStackRouterVite({ quoteStyle: 'double' }),
@@ -18,7 +21,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': {
+      [`${basePath}api`]: {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
