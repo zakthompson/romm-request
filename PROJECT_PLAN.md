@@ -136,11 +136,12 @@ Integrate with the IGDB API to enable game searching and platform selection.
 
 Core feature: users create requests, view their history; admins manage all requests.
 
-- [ ] **4.1 Create requests table**
+- [x] **4.1 Create requests table**
   - Schema: `id`, `user_id` (FK), `igdb_game_id`, `game_name`, `game_cover_url`, `platform_name`, `platform_igdb_id`, `status` (pending/fulfilled/rejected), `admin_notes`, `created_at`, `updated_at`, `fulfilled_at`
   - Migration
   - Shared types for request status enum and request DTOs
   - Verify: table created, types importable from shared
+  - Note: Schema in `server/src/db/schema.ts`. Migration `0001_create-requests-table.sql` includes a partial unique index (`WHERE status = 'pending'`) on `(user_id, igdb_game_id, platform_igdb_id)` to prevent duplicate pending requests — added manually since Drizzle doesn't support partial indexes natively. Shared package updated with `CreateRequestBody`, `UpdateRequestBody`, `RequestDto` types and `REQUEST_STATUSES` constant.
 
 - [ ] **4.2 Request API endpoints**
   - `POST /api/requests` — create a new request (authenticated users)
