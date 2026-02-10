@@ -1,0 +1,52 @@
+services:
+  romm-request:
+    build:
+      context: .
+      args:
+        - BASE_PATH=${BASE_PATH:-/}
+    ports:
+      - '${PORT:-3000}:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BASE_PATH=${BASE_PATH:-/}
+      - APP_URL=${APP_URL:-http://localhost:3000}
+      - DATABASE_PATH=/app/data/romm-request.db
+      - OIDC_ISSUER_URL=${OIDC_ISSUER_URL}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      - OIDC_REDIRECT_URI=${OIDC_REDIRECT_URI}
+      - OIDC_ADMIN_GROUP=${OIDC_ADMIN_GROUP:-romm-admin}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - SESSION_SALT=${SESSION_SALT}
+      - IGDB_CLIENT_ID=${IGDB_CLIENT_ID}
+      - IGDB_CLIENT_SECRET=${IGDB_CLIENT_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ROMM_DB_HOST=${ROMM_DB_HOST}
+      - ROMM_DB_PORT=${ROMM_DB_PORT:-3306}
+      - ROMM_DB_NAME=${ROMM_DB_NAME:-romm}
+      - ROMM_DB_USER=${ROMM_DB_USER}
+      - ROMM_DB_PASSWD=${ROMM_DB_PASSWD}
+    volumes:
+      - romm-request-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "let p = process.env.BASE_PATH || '/'; if (!p.endsWith('/')) p += '/'; fetch('http://localhost:3000' + p + 'api/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  romm-request-data:
