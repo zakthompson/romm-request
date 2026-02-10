@@ -56,10 +56,17 @@ export default async function authRoutes(app: FastifyInstance) {
       `${request.protocol}://${request.hostname}`
     );
 
-    const tokens = await client.authorizationCodeGrant(oidc, currentUrl, {
-      pkceCodeVerifier: codeVerifier,
-      expectedState,
-    });
+    let tokens: Awaited<ReturnType<typeof client.authorizationCodeGrant>>;
+    try {
+      tokens = await client.authorizationCodeGrant(oidc, currentUrl, {
+        pkceCodeVerifier: codeVerifier,
+        expectedState,
+      });
+    } catch (err) {
+      app.log.error(err, 'OIDC token exchange failed');
+      const loginPath = `${config.basePath}api/auth/login`;
+      return reply.redirect(loginPath);
+    }
 
     const claims = tokens.claims();
     if (!claims) {
@@ -70,11 +77,13 @@ export default async function authRoutes(app: FastifyInstance) {
     const email = (claims.email as string) || '';
     const name =
       (claims.preferred_username as string) || (claims.name as string) || email;
-    const groups = (claims.groups as string[]) || [];
+    const groups = Array.isArray(claims.groups)
+      ? (claims.groups as string[])
+      : [];
 
     const user = upsertUser(
       { sub, email, name, groups },
-      config.oidc.adminGroup
+      config.oidcAdminGroup
     );
 
     request.session.set('userId', user.id);
@@ -88,7 +97,8 @@ export default async function authRoutes(app: FastifyInstance) {
     return { success: true };
   });
 
-  if (config.nodeEnv !== 'production') {
+  if (config.devAuth) {
+    app.log.warn('Dev auth route enabled — POST /api/auth/dev-login');
     app.post('/dev-login', async (request) => {
       const body = request.body as {
         displayName?: string;

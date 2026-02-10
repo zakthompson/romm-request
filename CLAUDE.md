@@ -104,26 +104,28 @@ A self-hosted web application for requesting games to be added to a RomM collect
 
 ## Environment Variables
 
-| Variable             | Description                                                      |
-| -------------------- | ---------------------------------------------------------------- |
-| `DATABASE_PATH`      | Path to SQLite database file (default: `./data/romm-request.db`) |
-| `OIDC_ISSUER_URL`    | Authentik OIDC issuer URL                                        |
-| `OIDC_CLIENT_ID`     | OAuth2 client ID                                                 |
-| `OIDC_CLIENT_SECRET` | OAuth2 client secret                                             |
-| `OIDC_REDIRECT_URI`  | OAuth2 callback URL                                              |
-| `OIDC_ADMIN_GROUP`   | Authentik group name that grants admin access                    |
-| `SESSION_SECRET`     | Secret for secure session encryption (min 32 chars)              |
-| `IGDB_CLIENT_ID`     | Twitch/IGDB client ID                                            |
-| `IGDB_CLIENT_SECRET` | Twitch/IGDB client secret                                        |
-| `SMTP_HOST`          | SMTP server hostname                                             |
-| `SMTP_PORT`          | SMTP server port                                                 |
-| `SMTP_USER`          | SMTP username                                                    |
-| `SMTP_PASS`          | SMTP password                                                    |
-| `SMTP_FROM`          | From address for outbound emails                                 |
-| `ADMIN_EMAIL`        | Admin email for new-request notifications                        |
-| `BASE_PATH`          | Base URL path for subdirectory deployment (default: `/`)         |
-| `APP_URL`            | Full public URL of the app (used in emails and redirects)        |
-| `PORT`               | Server port (default: `3000`)                                    |
+| Variable             | Description                                                                 |
+| -------------------- | --------------------------------------------------------------------------- |
+| `DATABASE_PATH`      | Path to SQLite database file (default: `./data/romm-request.db`)            |
+| `OIDC_ISSUER_URL`    | Authentik OIDC issuer URL                                                   |
+| `OIDC_CLIENT_ID`     | OAuth2 client ID                                                            |
+| `OIDC_CLIENT_SECRET` | OAuth2 client secret                                                        |
+| `OIDC_REDIRECT_URI`  | OAuth2 callback URL                                                         |
+| `OIDC_ADMIN_GROUP`   | Authentik group name that grants admin access                               |
+| `SESSION_SECRET`     | Secret for secure session encryption (min 32 chars, required in production) |
+| `SESSION_SALT`       | 16-character salt for session key derivation (required in production)       |
+| `DEV_AUTH`           | Set to `true` to enable dev-login route (ignored in production)             |
+| `IGDB_CLIENT_ID`     | Twitch/IGDB client ID                                                       |
+| `IGDB_CLIENT_SECRET` | Twitch/IGDB client secret                                                   |
+| `SMTP_HOST`          | SMTP server hostname                                                        |
+| `SMTP_PORT`          | SMTP server port                                                            |
+| `SMTP_USER`          | SMTP username                                                               |
+| `SMTP_PASS`          | SMTP password                                                               |
+| `SMTP_FROM`          | From address for outbound emails                                            |
+| `ADMIN_EMAIL`        | Admin email for new-request notifications                                   |
+| `BASE_PATH`          | Base URL path for subdirectory deployment (default: `/`)                    |
+| `APP_URL`            | Full public URL of the app (used in emails and redirects)                   |
+| `PORT`               | Server port (default: `3000`)                                               |
 
 ## Development Commands
 

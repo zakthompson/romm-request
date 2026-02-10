@@ -10,7 +10,10 @@ import authRoutes from './routes/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const app = Fastify({ logger: true });
+const app = Fastify({
+  logger: true,
+  trustProxy: config.isProduction,
+});
 
 await app.register(sessionPlugin);
 await app.register(authPlugin);
@@ -23,7 +26,7 @@ app.get(`${config.basePath}api/health`, async () => ({
 
 await app.register(authRoutes, { prefix: `${config.basePath}api/auth` });
 
-if (config.nodeEnv === 'production') {
+if (config.isProduction) {
   const clientDistPath = path.resolve(__dirname, '../../client/dist');
   await app.register(fastifyStatic, {
     root: clientDistPath,
