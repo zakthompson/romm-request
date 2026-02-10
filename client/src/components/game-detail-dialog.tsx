@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Gamepad2, Check, Loader2 } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -89,7 +90,12 @@ export function GameDetailDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
-        {detailQuery.isLoading && <DetailSkeleton />}
+        {detailQuery.isLoading && (
+          <>
+            <DialogTitle className="sr-only">Loading game details</DialogTitle>
+            <DetailSkeleton />
+          </>
+        )}
 
         {detailQuery.isError && (
           <DialogHeader>
@@ -179,9 +185,9 @@ export function GameDetailDialog({
                 <Check className="h-4 w-4 text-green-500" />
                 <p className="text-sm">
                   Request submitted! You can track it on the{' '}
-                  <a href="/requests" className="text-primary underline">
+                  <Link to="/requests" className="text-primary underline">
                     My Requests
-                  </a>{' '}
+                  </Link>{' '}
                   page.
                 </p>
               </div>

@@ -25,6 +25,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 │   │   ├── lib/
 │   │   │   ├── api.ts       # Typed API client (apiFetch, ApiError)
 │   │   │   ├── auth.ts      # useAuth hook, authQueryOptions, User type
+│   │   │   ├── request-utils.ts # Shared request status config and filter definitions
 │   │   │   ├── utils.ts     # cn() utility for Tailwind class merging
 │   │   │   └── hooks/
 │   │   │       └── use-debounce.ts  # Generic debounce hook

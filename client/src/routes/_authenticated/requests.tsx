@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Gamepad2, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Gamepad2 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
+import { STATUS_CONFIG, STATUS_FILTERS } from '@/lib/request-utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,26 +12,6 @@ import type { RequestDto, RequestStatus } from '@romm-request/shared';
 export const Route = createFileRoute('/_authenticated/requests')({
   component: RequestsPage,
 });
-
-const STATUS_CONFIG: Record<
-  RequestStatus,
-  {
-    label: string;
-    icon: typeof Clock;
-    variant: 'default' | 'secondary' | 'destructive' | 'outline';
-  }
-> = {
-  pending: { label: 'Pending', icon: Clock, variant: 'secondary' },
-  fulfilled: { label: 'Fulfilled', icon: CheckCircle2, variant: 'default' },
-  rejected: { label: 'Rejected', icon: XCircle, variant: 'destructive' },
-};
-
-const STATUS_FILTERS: Array<{ value: RequestStatus | 'all'; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'fulfilled', label: 'Fulfilled' },
-  { value: 'rejected', label: 'Rejected' },
-];
 
 function RequestsPage() {
   const [statusFilter, setStatusFilter] = useState<RequestStatus | 'all'>(

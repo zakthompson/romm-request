@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { createFileRoute, Navigate } from '@tanstack/react-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Gamepad2, Clock, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Gamepad2, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { STATUS_CONFIG, STATUS_FILTERS } from '@/lib/request-utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,26 +23,6 @@ import type { RequestDto, RequestStatus } from '@romm-request/shared';
 export const Route = createFileRoute('/_authenticated/admin/requests')({
   component: AdminRequestsPage,
 });
-
-const STATUS_CONFIG: Record<
-  RequestStatus,
-  {
-    label: string;
-    icon: typeof Clock;
-    variant: 'default' | 'secondary' | 'destructive' | 'outline';
-  }
-> = {
-  pending: { label: 'Pending', icon: Clock, variant: 'secondary' },
-  fulfilled: { label: 'Fulfilled', icon: CheckCircle2, variant: 'default' },
-  rejected: { label: 'Rejected', icon: XCircle, variant: 'destructive' },
-};
-
-const STATUS_FILTERS: Array<{ value: RequestStatus | 'all'; label: string }> = [
-  { value: 'all', label: 'All' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'fulfilled', label: 'Fulfilled' },
-  { value: 'rejected', label: 'Rejected' },
-];
 
 function AdminRequestsPage() {
   const { isAdmin } = useAuth();

@@ -6,12 +6,12 @@ import {
   getRequestById,
   updateRequestStatus,
 } from '../services/requests.js';
-import type {
-  CreateRequestBody,
-  UpdateRequestBody,
-  RequestStatus,
+import {
+  REQUEST_STATUSES,
+  type CreateRequestBody,
+  type UpdateRequestBody,
+  type RequestStatus,
 } from '@romm-request/shared';
-import { REQUEST_STATUSES } from '@romm-request/shared';
 
 export default async function requestRoutes(app: FastifyInstance) {
   app.addHook('onRequest', requireAuth);
