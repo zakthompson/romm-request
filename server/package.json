@@ -1,7 +1,7 @@
 {
   "name": "@romm-request/server",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.0.4",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
