@@ -177,7 +177,12 @@ export function sendNewRequestNotification(
   const subject = `[${APP_NAME}] New request: ${request.gameName} (${request.platformName})`;
   const html = newRequestTemplate(request, requesterName);
 
-  sendMail(adminEmail, subject, html).catch(() => {});
+  sendMail(adminEmail, subject, html).catch((err) => {
+    console.error(
+      '[email] Unexpected error sending new-request notification:',
+      err
+    );
+  });
 }
 
 export function sendRequestStatusNotification(request: RequestDto): void {
@@ -189,5 +194,7 @@ export function sendRequestStatusNotification(request: RequestDto): void {
   const subject = `[${APP_NAME}] Request ${statusLabel}: ${request.gameName} (${request.platformName})`;
   const html = requestStatusTemplate(request, status);
 
-  sendMail(userEmail, subject, html).catch(() => {});
+  sendMail(userEmail, subject, html).catch((err) => {
+    console.error('[email] Unexpected error sending status notification:', err);
+  });
 }
