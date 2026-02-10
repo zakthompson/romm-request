@@ -21,7 +21,11 @@ export function useAuth() {
   const queryClient = useQueryClient();
 
   const logout = useCallback(async () => {
-    await fetch(apiPath('/api/auth/logout'), { method: 'POST' });
+    try {
+      await fetch(apiPath('/api/auth/logout'), { method: 'POST' });
+    } catch {
+      // Proceed with client-side logout even if server request fails
+    }
     queryClient.setQueryData(['auth', 'me'], null);
     window.location.href = import.meta.env.BASE_URL;
   }, [queryClient]);

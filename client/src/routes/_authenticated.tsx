@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, Navigate } from '@tanstack/react-router';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { NavBar } from '@/components/nav-bar';
 
@@ -12,7 +13,7 @@ function AuthenticatedLayout() {
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
+        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
       </div>
     );
   }

@@ -232,8 +232,9 @@ Finalize for self-hosted production deployment behind SWAG.
   - Verify: app accessible through SWAG at configured subdirectory
   - Note: Two example SWAG/nginx configs provided: `romm-request.subdomain.conf.example` (subdomain mode) and `romm-request.subfolder.conf.example` (subfolder mode). Deployment section added to `ARCHITECTURE.md` covering Docker build stages, subdirectory deployment mechanics, and cookie/proxy considerations (trustProxy, sameSite, httpOnly).
 
-- [ ] **6.4 Final polish and documentation**
+- [x] **6.4 Final polish and documentation**
   - Error handling review: all API errors return consistent JSON shape
   - Loading and error states in all frontend pages
   - Update README with setup instructions, screenshots, configuration reference
   - Verify: clean startup from scratch following only the README
+  - Note: Added React ErrorBoundary component wrapping the app root. IGDB route handlers now wrap service calls in try-catch and return `502` with user-friendly messages instead of unhandled 500s. Logout handles fetch errors gracefully. Loading states use spinner (`Loader2`) instead of plain text. README.md created with Quick Start, configuration reference, subdirectory deployment, SWAG/nginx, Authentik setup, and development instructions. CLAUDE.md and ARCHITECTURE.md updated with all new patterns and files.

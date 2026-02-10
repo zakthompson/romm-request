@@ -1,5 +1,6 @@
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
 import type { QueryClient } from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/error-boundary';
 import { DevAuthWidget } from '@/components/dev-auth-widget';
 
 export interface RouterContext {
@@ -12,9 +13,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
 function RootLayout() {
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      <Outlet />
-      {import.meta.env.DEV && <DevAuthWidget />}
-    </div>
+    <ErrorBoundary>
+      <div className="bg-background text-foreground min-h-screen">
+        <Outlet />
+        {import.meta.env.DEV && <DevAuthWidget />}
+      </div>
+    </ErrorBoundary>
   );
 }
