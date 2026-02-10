@@ -11,8 +11,6 @@ const GAME_DETAIL_FIELDS = [
   'platforms.id',
   'platforms.name',
   'platforms.abbreviation',
-  'category',
-  'version_parent',
 ].join(',');
 
 interface TwitchToken {
@@ -98,20 +96,13 @@ interface IgdbRawGame {
   first_release_date?: number;
   cover?: { image_id: string };
   platforms?: { id: number; name: string; abbreviation?: string }[];
-  category?: number;
-  version_parent?: number;
 }
 
 export async function searchGames(
   query: string
 ): Promise<IgdbGameSearchResult[]> {
   const sanitized = query.replace(/"/g, '\\"');
-  const body = `
-    search "${sanitized}";
-    fields ${GAME_DETAIL_FIELDS};
-    where version_parent = null & category = 0;
-    limit ${MAX_SEARCH_RESULTS};
-  `;
+  const body = `search "${sanitized}"; fields ${GAME_DETAIL_FIELDS}; where version_parent = null; limit ${MAX_SEARCH_RESULTS};`;
 
   const results = await igdbFetch<IgdbRawGame[]>('/games', body);
 
@@ -130,10 +121,7 @@ export interface IgdbGameDetail {
 export async function getGameDetails(
   id: number
 ): Promise<IgdbGameDetail | null> {
-  const body = `
-    fields ${GAME_DETAIL_FIELDS};
-    where id = ${id};
-  `;
+  const body = `fields ${GAME_DETAIL_FIELDS}; where id = ${id};`;
 
   const results = await igdbFetch<IgdbRawGame[]>('/games', body);
 
