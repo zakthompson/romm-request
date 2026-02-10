@@ -17,7 +17,7 @@ export function NavBar() {
   if (!user) return null;
 
   return (
-    <header className="border-b bg-card">
+    <header className="bg-card border-b">
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-6">
           <Link to="/search" className="text-lg font-semibold">
@@ -63,14 +63,14 @@ export function NavBar() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem
               disabled
-              className="text-xs text-muted-foreground"
+              className="text-muted-foreground text-xs"
             >
               {user.email}
             </DropdownMenuItem>
             {isAdmin && (
               <DropdownMenuItem
                 disabled
-                className="text-xs text-muted-foreground"
+                className="text-muted-foreground text-xs"
               >
                 Admin
               </DropdownMenuItem>

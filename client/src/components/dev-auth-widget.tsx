@@ -47,11 +47,11 @@ export function DevAuthWidget() {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed right-4 bottom-4 z-50">
       {open ? (
-        <div className="rounded-lg border bg-card p-3 shadow-lg">
+        <div className="bg-card rounded-lg border p-3 shadow-lg">
           <div className="mb-2 flex items-center justify-between gap-4">
-            <span className="text-xs font-medium text-muted-foreground">
+            <span className="text-muted-foreground text-xs font-medium">
               Dev Login
             </span>
             <button
@@ -67,7 +67,7 @@ export function DevAuthWidget() {
                 key={persona.label}
                 disabled={loading}
                 onClick={() => loginAs(persona.payload)}
-                className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+                className="hover:bg-accent flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-50"
               >
                 <persona.icon className="h-3.5 w-3.5" />
                 {persona.label}
@@ -78,10 +78,10 @@ export function DevAuthWidget() {
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="rounded-full border bg-card p-2 shadow-md transition-colors hover:bg-accent"
+          className="bg-card hover:bg-accent rounded-full border p-2 shadow-md transition-colors"
           title="Dev Auth"
         >
-          <Bug className="h-4 w-4 text-muted-foreground" />
+          <Bug className="text-muted-foreground h-4 w-4" />
         </button>
       )}
     </div>
