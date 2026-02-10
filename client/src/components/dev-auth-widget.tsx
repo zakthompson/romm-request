@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Bug, X, User as UserIcon, Shield } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import type { User } from '@/lib/auth';
@@ -25,10 +25,22 @@ const DEV_PERSONAS = [
   },
 ] as const;
 
+interface HealthResponse {
+  devAuth: boolean;
+}
+
 export function DevAuthWidget() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
+
+  const healthQuery = useQuery({
+    queryKey: ['health'],
+    queryFn: () => apiFetch<HealthResponse>('/api/health'),
+    staleTime: Infinity,
+  });
+
+  const devAuthEnabled = healthQuery.data?.devAuth === true;
 
   const loginAs = async (payload: (typeof DEV_PERSONAS)[number]['payload']) => {
     setLoading(true);
@@ -45,6 +57,8 @@ export function DevAuthWidget() {
       setOpen(false);
     }
   };
+
+  if (!devAuthEnabled) return null;
 
   return (
     <div className="fixed right-4 bottom-4 z-50">

@@ -23,6 +23,7 @@ app.get(`${config.basePath}api/health`, async () => ({
   status: 'ok',
   name: APP_NAME,
   timestamp: new Date().toISOString(),
+  devAuth: config.devAuth,
 }));
 
 await app.register(authRoutes, { prefix: `${config.basePath}api/auth` });
