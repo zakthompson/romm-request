@@ -61,6 +61,28 @@ function statusBadgeColor(status: string): string {
   }
 }
 
+function gameDetailsBlock(request: RequestDto, extraRows?: string): string {
+  const coverHtml = request.gameCoverUrl
+    ? `<td width="90" style="padding:12px 16px 12px 12px;vertical-align:top;">
+        <img src="${request.gameCoverUrl}" alt="${request.gameName}" width="90"
+             style="display:block;border-radius:4px;max-width:90px;" />
+      </td>`
+    : '';
+
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;border-radius:6px;">
+      <tr>
+        ${coverHtml}
+        <td style="padding:12px 16px;vertical-align:top;">
+          <p style="margin:0 0 4px;color:#71717a;font-size:12px;text-transform:uppercase;">Game</p>
+          <p style="margin:0 0 12px;color:#18181b;font-size:16px;font-weight:600;">${request.gameName}</p>
+          <p style="margin:0 0 4px;color:#71717a;font-size:12px;text-transform:uppercase;">Platform</p>
+          <p style="margin:0;color:#18181b;font-size:14px;">${request.platformName}</p>
+        </td>
+      </tr>
+      ${extraRows ?? ''}
+    </table>`;
+}
+
 function newRequestTemplate(
   request: RequestDto,
   requesterName: string
@@ -75,16 +97,7 @@ function newRequestTemplate(
     <p style="margin:0 0 24px;color:#3f3f46;font-size:14px;line-height:1.5;">
       <strong>${requesterName}</strong> has submitted a new game request.
     </p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;border-radius:6px;padding:16px;">
-      <tr><td style="padding:8px 16px;">
-        <p style="margin:0 0 8px;color:#71717a;font-size:12px;text-transform:uppercase;">Game</p>
-        <p style="margin:0;color:#18181b;font-size:16px;font-weight:600;">${request.gameName}</p>
-      </td></tr>
-      <tr><td style="padding:8px 16px;">
-        <p style="margin:0 0 8px;color:#71717a;font-size:12px;text-transform:uppercase;">Platform</p>
-        <p style="margin:0;color:#18181b;font-size:14px;">${request.platformName}</p>
-      </td></tr>
-    </table>
+    ${gameDetailsBlock(request)}
     <p style="margin:24px 0 0;text-align:center;">
       <a href="${appUrl}${basePath}/admin/requests"
          style="display:inline-block;padding:10px 24px;background-color:#18181b;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">
@@ -108,9 +121,9 @@ function requestStatusTemplate(
       ? 'Your game request has been fulfilled! The game should be available in the collection.'
       : 'Your game request has been reviewed and was not approved at this time.';
 
-  const notesSection = request.adminNotes
-    ? `<tr><td style="padding:8px 16px;">
-        <p style="margin:0 0 8px;color:#71717a;font-size:12px;text-transform:uppercase;">Admin Notes</p>
+  const notesRow = request.adminNotes
+    ? `<tr><td colspan="2" style="padding:8px 16px 12px;">
+        <p style="margin:0 0 4px;color:#71717a;font-size:12px;text-transform:uppercase;">Admin Notes</p>
         <p style="margin:0;color:#3f3f46;font-size:14px;line-height:1.5;">${request.adminNotes}</p>
       </td></tr>`
     : '';
@@ -122,17 +135,7 @@ function requestStatusTemplate(
       Request <span style="color:${color};">${statusLabel}</span>
     </h2>
     <p style="margin:0 0 24px;color:#3f3f46;font-size:14px;line-height:1.5;">${message}</p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;border-radius:6px;padding:16px;">
-      <tr><td style="padding:8px 16px;">
-        <p style="margin:0 0 8px;color:#71717a;font-size:12px;text-transform:uppercase;">Game</p>
-        <p style="margin:0;color:#18181b;font-size:16px;font-weight:600;">${request.gameName}</p>
-      </td></tr>
-      <tr><td style="padding:8px 16px;">
-        <p style="margin:0 0 8px;color:#71717a;font-size:12px;text-transform:uppercase;">Platform</p>
-        <p style="margin:0;color:#18181b;font-size:14px;">${request.platformName}</p>
-      </td></tr>
-      ${notesSection}
-    </table>
+    ${gameDetailsBlock(request, notesRow)}
     <p style="margin:24px 0 0;text-align:center;">
       <a href="${appUrl}${basePath}/requests"
          style="display:inline-block;padding:10px 24px;background-color:#18181b;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:500;">
