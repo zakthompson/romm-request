@@ -7,6 +7,7 @@ import { config } from './config.js';
 import sessionPlugin from './plugins/session.js';
 import authPlugin from './plugins/auth.js';
 import authRoutes from './routes/auth.js';
+import gameRoutes from './routes/games.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,6 +26,7 @@ app.get(`${config.basePath}api/health`, async () => ({
 }));
 
 await app.register(authRoutes, { prefix: `${config.basePath}api/auth` });
+await app.register(gameRoutes, { prefix: `${config.basePath}api/games` });
 
 if (config.isProduction) {
   const clientDistPath = path.resolve(__dirname, '../../client/dist');

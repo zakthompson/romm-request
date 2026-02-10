@@ -18,12 +18,16 @@ A self-hosted web application for requesting games to be added to a RomM collect
 ├── client/                # React frontend (Vite)
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── nav-bar.tsx  # App navigation bar (auth-aware, admin links)
-│   │   │   └── ui/          # shadcn/ui components (Button, Card, Input, DropdownMenu)
+│   │   │   ├── nav-bar.tsx            # App navigation bar (auth-aware, admin links)
+│   │   │   ├── game-result-card.tsx   # Game search result card (cover, title, year)
+│   │   │   ├── game-detail-dialog.tsx # Game detail dialog (summary, platforms)
+│   │   │   └── ui/          # shadcn/ui components (Badge, Button, Card, Dialog, DropdownMenu, Input, ScrollArea, Separator, Skeleton)
 │   │   ├── lib/
 │   │   │   ├── api.ts       # Typed API client (apiFetch, ApiError)
 │   │   │   ├── auth.ts      # useAuth hook, authQueryOptions, User type
-│   │   │   └── utils.ts     # cn() utility for Tailwind class merging
+│   │   │   ├── utils.ts     # cn() utility for Tailwind class merging
+│   │   │   └── hooks/
+│   │   │       └── use-debounce.ts  # Generic debounce hook
 │   │   ├── routes/          # TanStack Router file-based routes
 │   │   │   ├── __root.tsx   # Root layout
 │   │   │   ├── index.tsx    # Home/login page (redirects if authenticated)
@@ -43,9 +47,11 @@ A self-hosted web application for requesting games to be added to a RomM collect
 ├── server/                # Fastify backend
 │   ├── src/
 │   │   ├── routes/
-│   │   │   └── auth.ts    # Auth routes (login, callback, me, logout)
+│   │   │   ├── auth.ts    # Auth routes (login, callback, me, logout)
+│   │   │   └── games.ts   # Game search & detail routes (IGDB proxy)
 │   │   ├── services/
-│   │   │   └── auth.ts    # User upsert, getUserById
+│   │   │   ├── auth.ts    # User upsert, getUserById
+│   │   │   └── igdb.ts    # IGDB API client (Twitch auth, search, details)
 │   │   ├── db/
 │   │   │   ├── index.ts   # Database connection (better-sqlite3 + Drizzle)
 │   │   │   └── schema.ts  # Drizzle table definitions (users)
@@ -101,6 +107,7 @@ A self-hosted web application for requesting games to be added to a RomM collect
 - **Auth (backend)** — OIDC/OAuth2 via `openid-client` v6 with PKCE. Session via `@fastify/secure-session` (encrypted cookie, secret+salt). Config module (`server/src/config.ts`) with lazy getters for OIDC env vars. Type augmentations in `server/src/types.d.ts`.
 - **Auth (frontend)** — `useAuth` hook (`client/src/lib/auth.ts`) queries `/api/auth/me` via TanStack Query. `_authenticated` layout route protects all authenticated pages. Admin routes check `isAdmin` in the component body. API client (`client/src/lib/api.ts`) with typed error handling.
 - **Route protection** — Backend: `requireAuth` and `requireAdmin` hooks in `server/src/plugins/auth.ts`. Frontend: `_authenticated` layout route redirects to `/` if not authenticated; admin pages redirect to `/search` if not admin.
+- **IGDB integration** — `server/src/services/igdb.ts` handles Twitch OAuth2 client credentials flow for API access. Token is cached in memory and refreshed 60 seconds before expiry. Uses Apicalypse query syntax (plain text POST body) to `https://api.igdb.com/v4/games`. Search filters to main games only (`category = 0`, no `version_parent`). Cover images use `https://images.igdb.com/igdb/image/upload/t_{size}/{image_id}.jpg`. IGDB config uses lazy getter pattern to avoid startup failures. Rate limit: 4 req/sec (frontend caching via TanStack Query stale times mitigates this).
 
 ## Environment Variables
 

@@ -108,24 +108,27 @@ Implement OIDC/OAuth2 login with Authentik, session management, and admin role d
 
 Integrate with the IGDB API to enable game searching and platform selection.
 
-- [ ] **3.1 IGDB API service (backend)**
+- [x] **3.1 IGDB API service (backend)**
   - Implement Twitch OAuth2 client credentials flow to obtain IGDB access token
   - Token auto-refresh when expired
   - Create service methods: `searchGames(query)`, `getGameDetails(id)` (includes platforms, cover art, summary)
   - Verify: service returns results for known game titles
+  - Note: Service in `server/src/services/igdb.ts`. Uses Twitch client credentials flow with automatic token caching and 60-second pre-expiry refresh. IGDB config uses lazy getter pattern (same as OIDC) to avoid startup failures when env vars are unset. Search filters to main games only (`category = 0`, `version_parent = null`). Cover URLs constructed via `buildCoverUrl()` helper using `t_cover_big` size. Apicalypse query syntax sent as plain text POST body.
 
-- [ ] **3.2 Game search API endpoints**
+- [x] **3.2 Game search API endpoints**
   - `GET /api/games/search?q=<query>` — returns list of matching games (name, cover, year, platforms)
   - `GET /api/games/:id` — returns full game details including all platform versions
   - Both endpoints require authentication
   - Input validation and rate limiting (IGDB has rate limits — consider caching)
   - Verify: endpoints return correctly shaped data, auth is enforced
+  - Note: Routes in `server/src/routes/games.ts`, registered at `{basePath}api/games`. Both endpoints protected by `requireAuth` hook. Search requires `q` param of at least 2 characters. Game detail validates numeric ID. TanStack Query stale times on frontend provide effective caching layer (5 min for search, 10 min for details).
 
-- [ ] **3.3 Game search UI**
+- [x] **3.3 Game search UI**
   - Search input with debounced querying (TanStack Query)
   - Results displayed as cards (cover art, name, year)
   - Click a result to view full details with platform list
   - Verify: search works end-to-end in the browser, results render correctly
+  - Note: Search page in `client/src/routes/_authenticated/search.tsx`. Uses 300ms debounce via custom `useDebounce` hook (`client/src/lib/hooks/use-debounce.ts`). Results shown as a responsive grid of cover art cards (`GameResultCard` component). Clicking a card opens a `GameDetailDialog` with full game info, summary, and platform badges. Added shadcn/ui components: Badge, Skeleton, Dialog, Separator, ScrollArea.
 
 ---
 

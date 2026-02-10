@@ -147,9 +147,35 @@ In production, Fastify serves the built React SPA as static files. In developmen
 /admin/config           → Admin: configuration (admin only)
 ```
 
+## IGDB Integration
+
+```
+Server                          Twitch                    IGDB
+  │                               │                        │
+  │  POST /oauth2/token           │                        │
+  │  (client_credentials)         │                        │
+  │──────────────────────────────►│                        │
+  │◄──────────────────────────────│                        │
+  │  { access_token, expires_in } │                        │
+  │                               │                        │
+  │  POST /v4/games                                        │
+  │  Headers: Client-ID, Bearer token                      │
+  │  Body: Apicalypse query (plain text)                   │
+  │───────────────────────────────────────────────────────►│
+  │◄───────────────────────────────────────────────────────│
+  │  JSON array of game objects                            │
+```
+
+- **Token**: Twitch OAuth2 client credentials, cached in memory, refreshed 60s before expiry
+- **Query syntax**: Apicalypse (plain text POST body), e.g. `search "zelda"; fields name,cover.image_id; limit 20;`
+- **Search filter**: `category = 0` (main games only), `version_parent = null` (no editions/versions)
+- **Cover images**: `https://images.igdb.com/igdb/image/upload/t_{size}/{image_id}.jpg`
+  - Sizes: `cover_small` (90x128), `cover_big` (264x374), `thumb` (90x90), `720p` (1280x720)
+- **Rate limit**: 4 requests/second, 8 concurrent open requests
+
 ## Key Services (Backend)
 
-- **AuthService** — OIDC discovery, token exchange, user upsert
-- **IGDBService** — Twitch token management, game search/details queries
-- **EmailService** — SMTP connection, template rendering, send with error handling
-- **RequestService** — Request CRUD, duplicate detection, status transitions
+- **AuthService** (`server/src/services/auth.ts`) — OIDC user upsert, getUserById
+- **IGDBService** (`server/src/services/igdb.ts`) — Twitch token management, game search/details queries
+- **EmailService** — SMTP connection, template rendering, send with error handling (planned)
+- **RequestService** — Request CRUD, duplicate detection, status transitions (planned)

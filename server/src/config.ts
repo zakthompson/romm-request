@@ -35,6 +35,13 @@ export const config = {
     };
   },
 
+  get igdb() {
+    return {
+      clientId: required('IGDB_CLIENT_ID'),
+      clientSecret: required('IGDB_CLIENT_SECRET'),
+    };
+  },
+
   session: {
     secret: isProduction
       ? required('SESSION_SECRET')
