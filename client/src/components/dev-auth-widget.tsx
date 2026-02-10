@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Bug, X, User, Shield } from 'lucide-react';
+import { Bug, X, User as UserIcon, Shield } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
-import type { User as AuthUser } from '@/lib/auth';
+import type { User } from '@/lib/auth';
 
 const DEV_PERSONAS = [
   {
     label: 'User',
-    icon: User,
+    icon: UserIcon,
     payload: {
       displayName: 'Dev User',
       email: 'user@localhost',
@@ -33,11 +33,13 @@ export function DevAuthWidget() {
   const loginAs = async (payload: (typeof DEV_PERSONAS)[number]['payload']) => {
     setLoading(true);
     try {
-      const user = await apiFetch<AuthUser>('/api/auth/dev-login', {
+      const user = await apiFetch<User>('/api/auth/dev-login', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
       queryClient.setQueryData(['auth', 'me'], user);
+    } catch (err) {
+      console.error('Dev login failed:', err);
     } finally {
       setLoading(false);
       setOpen(false);
