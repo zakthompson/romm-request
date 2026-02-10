@@ -51,6 +51,20 @@ export function GameDetailDialog({
     staleTime: 10 * 60 * 1000,
   });
 
+  const collectionQuery = useQuery({
+    queryKey: ['collection', 'check', gameId],
+    queryFn: () =>
+      apiFetch<{ platformIgdbIds: number[] }>(
+        `/api/collection/check?igdbGameId=${gameId}`
+      ),
+    enabled: gameId !== null,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const collectedPlatformIds = new Set(
+    collectionQuery.data?.platformIgdbIds ?? []
+  );
+
   const submitMutation = useMutation({
     mutationFn: (body: CreateRequestBody) =>
       apiFetch<RequestDto>('/api/requests', {
@@ -149,32 +163,51 @@ export function GameDetailDialog({
                       : 'Select a Platform to Request'}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {game.platforms.map((platform) => (
-                      <Badge
-                        key={platform.id}
-                        variant={
-                          selectedPlatformId === platform.id
-                            ? 'default'
-                            : 'secondary'
-                        }
-                        className={
-                          submitMutation.isSuccess
-                            ? ''
-                            : 'cursor-pointer transition-colors'
-                        }
-                        onClick={() => {
-                          if (submitMutation.isSuccess) return;
-                          setSelectedPlatformId(
+                    {game.platforms.map((platform) => {
+                      const inCollection = collectedPlatformIds.has(
+                        platform.id
+                      );
+
+                      if (inCollection) {
+                        return (
+                          <Badge
+                            key={platform.id}
+                            variant="outline"
+                            className="border-green-500/50 bg-green-500/10 text-green-600 dark:text-green-400"
+                          >
+                            <Check className="mr-1 h-3 w-3" />
+                            {platform.abbreviation ?? platform.name}
+                          </Badge>
+                        );
+                      }
+
+                      return (
+                        <Badge
+                          key={platform.id}
+                          variant={
                             selectedPlatformId === platform.id
-                              ? null
-                              : platform.id
-                          );
-                          submitMutation.reset();
-                        }}
-                      >
-                        {platform.abbreviation ?? platform.name}
-                      </Badge>
-                    ))}
+                              ? 'default'
+                              : 'secondary'
+                          }
+                          className={
+                            submitMutation.isSuccess
+                              ? ''
+                              : 'cursor-pointer transition-colors'
+                          }
+                          onClick={() => {
+                            if (submitMutation.isSuccess) return;
+                            setSelectedPlatformId(
+                              selectedPlatformId === platform.id
+                                ? null
+                                : platform.id
+                            );
+                            submitMutation.reset();
+                          }}
+                        >
+                          {platform.abbreviation ?? platform.name}
+                        </Badge>
+                      );
+                    })}
                   </div>
                 </div>
               </>

@@ -196,10 +196,10 @@ The feature is **gracefully disabled** when `ROMM_DB_HOST` is not set — the AP
 
 ### Step 4: Frontend — Collection Availability in Game Detail Dialog
 
-- [ ] Add `useQuery` for collection check in `GameDetailDialog`
-- [ ] Derive `collectedPlatformIds` set from query data
-- [ ] Modify platform badges: green checkmark + non-clickable for collected platforms
-- [ ] Verify: `pnpm typecheck` passes, visual check in browser
+- [x] Add `useQuery` for collection check in `GameDetailDialog`
+- [x] Derive `collectedPlatformIds` set from query data
+- [x] Modify platform badges: green checkmark + non-clickable for collected platforms
+- [x] Verify: `pnpm typecheck` passes, visual check in browser
 
 **Files to modify:**
 
